@@ -11,7 +11,7 @@ from scipy.interpolate import griddata as gd
 import pybrain.datasets as pd
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
-import randomZ
+from module.randomZ import read_temp
 import datetime as dt
 import mplcursors
 
@@ -22,11 +22,12 @@ start_time =''
 end_time= ''
 
 class Plot:
-    def __init__(self, num, theme, min_bound, max_bound, interval, p_value, extr_interval, model,
+    def __init__(self, front_num, end_num, theme, min_bound, max_bound, interval, p_value, extr_interval, model,
                  interpol_method, method,matrix_num):
         super().__init__()
 
-        self.num = num  # num * num
+        self.front_num = front_num
+        self.end_num = end_num
         self.theme = theme
         self.interval = interval
         self.min_bound = min_bound
@@ -41,16 +42,16 @@ class Plot:
         self.x = []
         self.y = []
 
-        for i in range(num):
-            for j in range(num):
+        for i in range(front_num):
+            for j in range(end_num):
                 self.x.append(i + 1)
                 self.y.append(j + 1)
 
-        z = np.random.uniform(low=0, high=40, size=(num * num,))
+        z = np.random.uniform(low=0, high=40, size=(front_num * end_num,))
         self.sensor_data = np.c_[self.x, self.y, z]
 
     def main(self):
-        extrapolation_spots = self.get_plane(1, self.num, 1, self.num, self.extr_interval)
+        extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
 
         if (self.model == 'neural'):
             self.neural_analysis(extrapolation_spots)
@@ -125,8 +126,8 @@ class Plot:
         return extrapolation_spots
 
     def kriging(self,data, extrapolation_spots):
-        gridx = np.arange(1.0, self.num, self.num)
-        gridy = np.arange(1.0, self.num, self.num)
+        gridx = np.arange(1.0, self.front_num, self.back_num)
+        gridy = np.arange(1.0, self.front_num, self.back_num)
         OK = OrdinaryKriging(data[:, 0], data[:, 1], data[:, 2], variogram_model='spherical',verbose=False, nlags=100)
 
         z, ss = OK.execute('grid', gridx, gridy)
@@ -157,13 +158,13 @@ class Plot:
             return combined
 
     def interpolation(self,data):
-        gridx, gridy = np.mgrid[1:self.num:50j, 1:self.num:50j]
+        gridx, gridy = np.mgrid[1:self.front_num:50j, 1:self.end_num:50j]
         gridz = gd(data[:, :2], data[:, 2], (gridx, gridy), method=self.interpol_method)
         return gridx, gridy, gridz
 
     def plot(self,data, gridx, gridy, gridz, method='rotate', title='nearest'):
 
-        extrapolation_spots = self.get_plane(1, self.num, 1, self.num, self.extr_interval)
+        extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
 
         def update(i):
             ax.view_init(azim=i)
@@ -171,7 +172,7 @@ class Plot:
 
         def update_(i):
             now = dt.datetime.now().strftime('%H:%M:%S')
-            update_z = randomZ.read_temp(self.num)
+            update_z = read_temp(self.front_num) # read_temp 바꾸기
             global start_time, end_time, grid_array,total
 
             # 3. 값이 더이상 들어오지 않음
@@ -362,16 +363,18 @@ if __name__ == '__main__':
 
 
 '''
-def Main(num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num):
+def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num):
     #1. plot 만들기
-    plot = Plot(num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num)
+    plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num)
     # 2. plot main 함수 실행
     plot.main()
     sys.exit()
     return result
 
-
-result = Main(num=10,
+'''
+result = Main(
+     front_num = 10,
+     end_num = 10,
      theme="coolwarm",
      min_bound=0,
      max_bound=110,
@@ -386,3 +389,5 @@ result = Main(num=10,
 
 print("-- result --")
 print(result)
+
+'''

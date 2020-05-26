@@ -8,8 +8,9 @@ from PyQt5.QtWidgets import QMessageBox,QApplication,QFileDialog,QMainWindow,QPl
 from PyQt5 import uic, QtGui,QtCore
 import logging
 
-from wifiConnectDialog import Ui_wifiDialog
-from uartConnectDialog import Ui_uartDialog
+from module.wifiConnectDialog import Ui_wifiDialog
+from module.uartConnectDialog import Ui_uartDialog
+from module.matrixGraph import  Main
 
 PMPSUI = '../ui_Files/PMPS.ui'
 
@@ -185,13 +186,10 @@ class MainWindow(QMainWindow):
 
 '''
 QApplicaton : 기본적으로 프로그램을 실행시키는 역할
-
 sys.argv : 현재 소스코드에 대한 절대 경로를 나타낸다. 즉 현재.파일이름.py의 절대경로를 나타낸다.
 QApplicaton class의 instance을 생성할 떄,
-
 '''
 app = QApplication(sys.argv)
 main_window = MainWindow()
 main_window.show()
 app.exec_() #QApplication().exec_()  : 프로그램을 Event Loop(무한 루프)로 진입시키는 method
-

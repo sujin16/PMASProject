@@ -555,6 +555,9 @@ background-color: rgb(233, 233, 233);</string>
             <height>18</height>
            </rect>
           </property>
+          <property name="value">
+           <number>10</number>
+          </property>
          </widget>
          <widget class="QLabel" name="senser_number_label_2">
           <property name="enabled">
@@ -587,6 +590,9 @@ background-color: rgb(233, 233, 233);</string>
             <width>36</width>
             <height>18</height>
            </rect>
+          </property>
+          <property name="value">
+           <number>10</number>
           </property>
          </widget>
          <widget class="QLabel" name="senser_number_label">
@@ -902,7 +908,7 @@ background-color: rgb(233, 233, 233);</string>
             </property>
            </item>
           </widget>
-          <widget class="QLineEdit" name="threshold_lineEdit">
+          <widget class="QLineEdit" name="interval_lineEdit">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -926,6 +932,9 @@ background-color: rgb(233, 233, 233);</string>
              <height>20</height>
             </size>
            </property>
+           <property name="text">
+            <string>1000</string>
+           </property>
           </widget>
           <widget class="QLabel" name="method_label_4">
            <property name="enabled">
@@ -944,7 +953,7 @@ background-color: rgb(233, 233, 233);</string>
 </string>
            </property>
            <property name="text">
-            <string>Threshold Value</string>
+            <string>Interval</string>
            </property>
           </widget>
           <widget class="QLabel" name="method_label_5">
@@ -990,6 +999,9 @@ background-color: rgb(233, 233, 233);</string>
              <width>110</width>
              <height>20</height>
             </size>
+           </property>
+           <property name="text">
+            <string>0.5</string>
            </property>
           </widget>
          </widget>
@@ -1258,13 +1270,6 @@ border-bottom:1px solid black;</string>
             </property>
             <property name="text">
              <string>Log</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPlainTextEdit" name="log_plainTextEdit">
-            <property name="readOnly">
-             <bool>true</bool>
             </property>
            </widget>
           </item>
