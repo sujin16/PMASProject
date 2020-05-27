@@ -1184,6 +1184,14 @@ background-color: rgb(255, 255, 255);</string>
            </widget>
           </item>
           <item>
+           <widget class="MplWidget" name="MplWidget" native="true">
+            <property name="styleSheet">
+             <string notr="true">border-width:0px
+</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_2">
             <property name="enabled">
              <bool>true</bool>
@@ -1344,6 +1352,14 @@ border-bottom:1px solid black;</string>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MplWidget</class>
+   <extends>QWidget</extends>
+   <header>mplwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
