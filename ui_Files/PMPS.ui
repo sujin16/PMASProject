@@ -414,6 +414,12 @@ background-color: rgb(233, 233, 233);</string>
             <height>91</height>
            </rect>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
@@ -659,6 +665,12 @@ background-color: rgb(233, 233, 233);</string>
             <height>91</height>
            </rect>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
@@ -811,6 +823,12 @@ background-color: rgb(233, 233, 233);</string>
             <width>231</width>
             <height>191</height>
            </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
@@ -1061,26 +1079,32 @@ background-color: rgb(255, 255, 255);</string>
            <number>1</number>
           </property>
           <item>
-           <widget class="QWidget" name="radio_widget" native="true">
-            <property name="enabled">
-             <bool>true</bool>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>33</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>50</height>
+              <height>33</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">border-width:0px;
-</string>
+             <string notr="true">border-width:1px;
+border-top-color: rgb(255, 255, 255);
+border-right-color: rgb(255, 255, 255);
+border-left-color: rgb(255, 255, 255);
+border-bottom-color:rgb(97, 97, 97);</string>
+            </property>
+            <property name="title">
+             <string/>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
               <spacer name="horizontalSpacer_9">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -1089,93 +1113,63 @@ background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>27</width>
-                 <height>27</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="max_radioButton">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>50</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>50</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">border-width:0px;</string>
-               </property>
-               <property name="text">
-                <string>MAX</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_10">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>27</width>
-                 <height>27</height>
+                 <width>16</width>
+                 <height>19</height>
                 </size>
                </property>
               </spacer>
              </item>
              <item>
               <widget class="QRadioButton" name="mpa_radioButton">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>50</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>50</width>
-                 <height>16777215</height>
-                </size>
-               </property>
                <property name="styleSheet">
                 <string notr="true">border-width:0px;</string>
                </property>
                <property name="text">
                 <string>MPA</string>
                </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer_11">
-               <property name="enabled">
-                <bool>true</bool>
+              <spacer name="horizontalSpacer_7">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>25</width>
+                 <height>19</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="max_radioButton">
+               <property name="styleSheet">
+                <string notr="true">border-width:0px;</string>
+               </property>
+               <property name="text">
+                <string>MAX</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_8">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>429</width>
-                 <height>27</height>
+                 <width>476</width>
+                 <height>10</height>
                 </size>
                </property>
               </spacer>
@@ -1186,29 +1180,9 @@ background-color: rgb(255, 255, 255);</string>
           <item>
            <widget class="MplWidget" name="MplWidget" native="true">
             <property name="styleSheet">
-             <string notr="true">border-width:0px
-</string>
+             <string notr="true">border-width:0px;</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>617</width>
-              <height>17</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>

@@ -10,7 +10,9 @@ import logging
 
 from module.wifiConnectDialog import Ui_wifiDialog
 from module.uartConnectDialog import Ui_uartDialog
-from module.matrixGraph import  Main
+from module.matrixGraph import Main
+
+import random
 
 PMPSUI = '../ui_Files/PMPS.ui'
 
@@ -46,9 +48,10 @@ class MainWindow(QMainWindow):
 
         self.initConnect()
         self.initBrowser()
+        self.initSetting()
         self.initLog()
-        self.resultGraph()
-        self.resultTable()
+
+
 
     def initConnect(self):
         self.connect_comboBox.activated[str].connect(self.comboBoxFunction)
@@ -94,7 +97,7 @@ class MainWindow(QMainWindow):
         #logging.getLogger().setLevel(logging.DEBUG)
 
         self.verticalLayout_3.addWidget(logTextBox.widget)
-        self.start_pushButton.clicked.connect(self.test)
+        #self.start_pushButton.clicked.connect(self.test)
 
     def test(self):
         logging.debug('damn, a bug')
@@ -104,40 +107,85 @@ class MainWindow(QMainWindow):
 
 
     def initSetting(self):
-        front_senserNum = self.front_senserNum_spinBox
-        end_senserNum = self.end_senserNum_spinBox
-        graph_method = self.method_comboBox
-        graph_theme = self.theme_comboBox
-        z_min =self.min_lineEdit
-        z_max = self.z_max_lineEdit
-        sample_rate = self.sample_rate_lineEdit
-        algorithm = self.algorithm_comboBox
-        threshold =self.threshold_lineEdit
-        p_value = self.p_value_lineEdit
+        title =str(self.algorithm_comboBox.currentText())
+        theme =str(self.theme_comboBox.currentText())
+        result_Array=[] # 일단 빈 값을 보내준다.
 
-        dot_check= self.dotcheckBox
-        startButton = self.start_pushButton
+        self.start_pushButton.clicked.connect(self.startGrah)
+        self.mpa_radioButton.clicked.connect(lambda : self.radioButtonClicked(title,theme,result_Array))
+        self.max_radioButton.clicked.connect(lambda : self.radioButtonClicked(title,theme,result_Array))
 
+    def startGrah(self):
+        result_array = Main(
+            front_num=10,
+            end_num=10,
+            theme=str(self.theme_comboBox.currentText()),
+            min_bound=0,
+            max_bound=110,
+            interval=1000,
+            p_value=0.5,
+            extr_interval=30,
+            model='nearest',  # 'nearest', 'kriging', 'neural'
+            interpol_method='cubic',  # 'nearest', 'linear', 'cubic'
+            method='gradation',  # gradation contour rotate wireframe
+            matrix_num=3  # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
+        )
 
-    def resultGraph(self):
-        # self.max_radioButton  / self.mpa_radionButton 에 따라 다른 그래프 보여주기
-        #cursor를 갔다대면, tableView 보여주기
+        title = str(self.algorithm_comboBox.currentText())
+        theme = str(self.theme_comboBox.currentText())
+        result_Array = result_array
 
-        N = 5
-        value = (20, 35, 30, 35, 27)
-        ind = np.arange(N)
-        width = 0.35
+        self.radioButtonClicked(title, theme, result_Array)
+        self.mpa_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, result_Array))
+        self.max_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, result_Array))
 
-        fig = plt.Figure()  # fig은 그래프 창, ax 는 그래프 그 자체
-        ax = fig.add_subplot(111)
-        ax.bar(ind, value, width)
-        ax.set_xticks(ind + width / 20)
-        ax.set_xticklabels(['G1', 'G2', 'G3', 'G4', 'G5'])
-        ax.set_xticks(ind + width / 20)
+    def radioButtonClicked(self,title,theme,result_Array):
 
-        canvas = FigureCanvas(fig)
-        canvas.draw()
-        self.verticalLayout_2.addWidget(canvas)
+        if len(result_Array)>0:
+            #mpa_radioButton이 setCheck(True)이므로 그림을 미리 그려줘야 함.
+
+            # cursor를 갔다대면, tableView 보여주기
+            self.MplWidget.canvas.axes.clear()
+            xlist = np.linspace(-3.0, 3.0, 100)
+            ylist = np.linspace(-3.0, 3.0, 100)
+            X, Y = np.meshgrid(xlist, ylist)
+            Z = np.sqrt(X ** 2 + Y ** 2)
+            self.MplWidget.canvas.axes.clear()
+            self.MplWidget.canvas.axes.contourf(X, Y, Z, cmap=theme)
+            self.MplWidget.canvas.axes.set_title("MPA " + title, pad=30)
+            self.MplWidget.canvas.draw()
+
+            print('mpa ')
+            self.resultTable()
+
+            if self.mpa_radioButton.isChecked():
+                xlist = np.linspace(-3.0, 3.0, 100)
+                ylist = np.linspace(-3.0, 3.0, 100)
+                X, Y = np.meshgrid(xlist, ylist)
+                Z = np.sqrt(X ** 2 + Y ** 2)
+                self.MplWidget.canvas.axes.clear()
+                self.MplWidget.canvas.axes.contourf(X, Y, Z, cmap=theme)
+                self.MplWidget.canvas.axes.set_title("MPA "+ title, pad=30)
+                self.MplWidget.canvas.draw()
+
+                print('mpa ')
+                self.resultTable()
+
+            elif self.max_radioButton.isChecked():
+                xlist = np.linspace(-3.0, 3.0, 100)
+                ylist = np.linspace(-3.0, 3.0, 100)
+                X, Y = np.meshgrid(xlist, ylist)
+                Z = np.sqrt(X ** 2 + Y ** 2)
+                self.MplWidget.canvas.axes.clear()
+                self.MplWidget.canvas.axes.contourf(X, Y, Z, cmap=theme)
+                self.MplWidget.canvas.axes.set_title("MAX "+ title, pad=30)
+                self.MplWidget.canvas.draw()
+
+                print('max ')
+                self.resultTable()
+        else:
+            print('no array')
+
 
     def resultTable(self):
         self.table_size_comboBox.activated[str].connect(self.makeTable)

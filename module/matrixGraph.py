@@ -175,7 +175,7 @@ class Plot:
             update_z = read_temp(self.front_num) # read_temp 바꾸기
             global start_time, end_time, grid_array,total
 
-            # 3. 값이 더이상 들어오지 않음
+            # 3. 값이 더이상 들어오지 않음. -> 결과 등고선 보여주기
             if (update_z.size == 0):
                 fig.suptitle('finish', fontsize=18)
                 end_time = now
@@ -186,6 +186,10 @@ class Plot:
 
                 fig2 = plt2.figure(figsize=(10, 10))
                 fig2.suptitle(title, fontsize=18)
+
+                #print("------------------------------------")
+                print(grid_array)
+
                 cf = plt2.contourf(grid_array[0], grid_array[1], grid_array[2],cmap=self.theme)
                 plt2.gca().invert_yaxis()
                 cursor = mplcursors.cursor()
@@ -213,8 +217,8 @@ class Plot:
                     for_num = int(float((self.matrix_num -1)/2))
 
                     # 4. index가  범위에 벗어나게 되면 인덱스에 벗어났다고 알려준다.
-                    if(x_index <for_num or y_index <for_num or x_index == self.num -for_num or y_index == self.num -for_num ):
-                        print("click "+str(for_num) +" < index  < "+ str(self.num -for_num))
+                    if(x_index <for_num or y_index <for_num or x_index == self.front_num -for_num or y_index == self.end_num -for_num ):
+                        print("click "+str(for_num) +" < index  < "+ str(self.front_num -for_num))
                     else:
                         # 5. 실제 센서값과 가장 가까이 있는 값들을 출력해준다.
                         print("x index : " + str(x_index))  # x_index
@@ -227,9 +231,8 @@ class Plot:
                                 print("z["+str(i)+"]"+"["+str(j)+"]" +"  "+str(num))
 
                     print("\n")
+
                     '''
-
-
 
                     x_index = int(float(x_index))
                     y_index = int(float(y_index))
@@ -363,13 +366,17 @@ if __name__ == '__main__':
 
 
 '''
+
+
 def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num):
     #1. plot 만들기
     plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, interpol_method, method,matrix_num)
     # 2. plot main 함수 실행
     plot.main()
-    sys.exit()
-    return result
+    print(sys)
+    #sys.exit()
+    return grid_array
+
 
 '''
 result = Main(
@@ -387,7 +394,12 @@ result = Main(
      matrix_num = 3 # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
      )
 
-print("-- result --")
+print('---------  end result  ------------')
 print(result)
+sys.exit()
+
+
 
 '''
+
+
