@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import sys
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox,QApplication,QFileDialog,QMainWindow,QPlainTextEdit,QAbstractItemView, QTableWidgetItem
 from PyQt5 import uic, QtGui,QtCore
 import logging
@@ -30,6 +31,9 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self,None)
         uic.loadUi(PMPSUI, self)
 
+        self.socketserver =''
+        self.ip = ''
+        self.port =''
 
         self.folder_name =''
         self.theme =''
@@ -42,10 +46,10 @@ class MainWindow(QMainWindow):
         self.radionClick =False
         self.statusbar.showMessage('Ready')
 
+        self.initLog()
         self.initConnect()
         self.initBrowser()
         self.initSetting()
-        self.initLog()
 
     def initConnect(self):
         self.connect_comboBox.activated[str].connect(self.comboBoxFunction)
@@ -53,22 +57,34 @@ class MainWindow(QMainWindow):
     def comboBoxFunction(self,text):
         if 'Wifi' in text :
             print('Wifi select')
-            self.openWifiDialog()
+            logging.info('something to remember')
+            self.ip= self.openWifiDialog()
+            print(self.ip)
         elif 'Uart' in text:
             print('Uart select')
             self.openUartDialog()
 
+    #https://stackoverflow.com/questions/58655570/how-to-access-qlineedit-in-qdialog 참고
     def openWifiDialog(self):
-        self.window = QMainWindow()
-        self.ui = Ui_wifiDialog()
-        self.ui.setupUi(self.window)
-        self.window.show()
+        Dialog = QtWidgets.QDialog(self)
+        ui = Ui_wifiDialog()
+        ui.setupUi(Dialog)
+        resp = Dialog.exec_()
+
+        if resp == QtWidgets.QDialog.Accepted:
+            logging.info('save ip address')
+            return ui.ip_lineEdit.text()
+        else:
+            logging.warning('again ip address')
+            return None
+
 
     def openUartDialog(self):
         self.window = QMainWindow()
         self.ui = Ui_uartDialog()
         self.ui.setupUi(self.window)
         self.window.show()
+
 
 
     def initBrowser(self):
@@ -102,8 +118,11 @@ class MainWindow(QMainWindow):
 
 
     def initSetting(self):
+        # 다 들어왔는지 체크
         title =str(self.algorithm_comboBox.currentText())
         theme =str(self.theme_comboBox.currentText())
+        self.ip = ''
+        self.browser =''
 
         self.start_pushButton.clicked.connect(self.startGrah)
 

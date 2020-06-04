@@ -11,7 +11,7 @@ from scipy.interpolate import griddata as gd
 import pybrain.datasets as pd
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
-from module.randomZ import read_temp
+from module.valueZ import read_temp
 import datetime as dt
 import mplcursors
 
@@ -233,19 +233,14 @@ class Plot:
                     print("\n")
 
                     '''
-
                     x_index = int(float(x_index))
                     y_index = int(float(y_index))
-
                     2. matrix_num 은 3 , 5 ,7  홀수만 가능하다. 2n + 1 ( n>= 1)
-
                     for_num = int(float((matrix_num -1)/2))
-
                     for i in range (a_index -for_num ,a_index +for_num+1):
                         for j in range(b_index - 1, b_index + 2):
                             num  = round(z[i][j],0)
                             print("z["+str(i)+"]"+"["+str(j)+"]" +"  "+str(num))
-
                     for i in range (x_index -for_num ,x_index +for_num+1):
                         for j in range(y_index - 1, y_index + 2):
                             num  = round(z_reshape[i][j],0)
@@ -360,11 +355,8 @@ if __name__ == '__main__':
      model ='nearest',  # 'nearest', 'kriging', 'neural'
      interpol_method='cubic', # 'nearest', 'linear', 'cubic'
      method ='gradation')  # wireframe  gradation contour rotate
-
     plot.main()
     sys.exit()
-
-
 '''
 
 
@@ -393,13 +385,7 @@ result = Main(
      method='gradation', # gradation contour rotate wireframe
      matrix_num = 3 # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
      )
-
 print('---------  end result  ------------')
 print(result)
 sys.exit()
-
-
-
 '''
-
-
