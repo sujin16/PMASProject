@@ -79,26 +79,6 @@
      <string>Save</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="port_lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>50</y>
-      <width>231</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="rate_lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>90</y>
-      <width>231</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QLabel" name="rate_label">
     <property name="geometry">
      <rect>
@@ -110,6 +90,26 @@
     </property>
     <property name="text">
      <string>Rate</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="port_comboBox">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>50</y>
+      <width>231</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="rate_comboBox">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>90</y>
+      <width>231</width>
+      <height>22</height>
+     </rect>
     </property>
    </widget>
   </widget>
