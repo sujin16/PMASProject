@@ -2,6 +2,7 @@ import socketserver
 import sys
 
 
+#data를 받으면 txt파일로 저장하기
 class TCPServer(socketserver.BaseRequestHandler):
     def handle(self):
         print('client address  :{0}\n'.format(self.client_address[0]))
@@ -42,6 +43,7 @@ class TCPServer(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
+
     '''
     ip = '192.168.0.2'
     port = 9002
@@ -51,10 +53,16 @@ if __name__ == '__main__':
 
     '''
 
-    ip = '192.168.0.4'
+    ip = '192.168.0.2'
     port = 9002
 
-    server = socketserver.TCPServer((ip, port), TCPServer)
-    print('start...')
-    print('server address  :{0}'.format(ip))
-    server.serve_forever()
+    try:
+        server = socketserver.TCPServer((ip, port), TCPServer)
+        print('start...')
+        print('server address  :{0}'.format(ip))
+        server.serve_forever()
+    except:
+        print('check ipconfig ip')
+
+
+

@@ -13,7 +13,7 @@ import sensor
 import signal
 import threading
 
-class serialPlot:
+class serialServer:
     def __init__(self, serialPort='COM5', serialBaud=115200, plotLength=100, dataNumBytes=2, numPlots=1):
 
         self.list = []
@@ -218,7 +218,7 @@ def main():
     numPlots = 7  # number of plots in 1 graph
 
     # 2. make serialPlot()
-    s = serialPlot(portName, baudRate, maxPlotLength, dataNumBytes, numPlots)  # initializes all required variables
+    s = serialServer(portName, baudRate, maxPlotLength, dataNumBytes, numPlots)  # initializes all required variables
 
     # 3. serial start
     s.readSerialStart()

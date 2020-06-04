@@ -1,28 +1,17 @@
 #-*- coding: utf-8 -*-
 
 import sys
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QMessageBox,QApplication,QFileDialog,QMainWindow,QPlainTextEdit,QAbstractItemView, QTableWidgetItem
 from PyQt5 import uic, QtGui,QtCore
-import mplcursors
 import logging
+import math
 
 from module.wifiConnectDialog import Ui_wifiDialog
 from module.uartConnectDialog import Ui_uartDialog
-from module.matrixGraph import Main
-from module.randomZ import num as randomZ_num
-
-import random
+from module.interpolation import Main
+from module.valueZ import num as randomZ_num
 
 PMPSUI = '../ui_Files/PMPS.ui'
-
-
-data = {'col1': ['1', '2', '3', '4'],
-        'col2': ['1', '2', '1', '3'],
-        'col3': ['1', '1', '2', '1']}
-
 
 
 class QTextEditLogger(logging.Handler):
@@ -35,17 +24,22 @@ class QTextEditLogger(logging.Handler):
         self.widget.appendPlainText(msg)
 
 
-
 class MainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self,None)
         uic.loadUi(PMPSUI, self)
 
-        #전역 변수들
+
         self.folder_name =''
         self.theme =''
 
+        self.result_Array =[]
+        self.mpa_grid_array =[]
+        self.max_grid_array =[]
+
+        self.location=[0,0,0] # location[0] = x 좌표, location[1] = y 좌표, location[2] = z 좌표,
+        self.radionClick =False
         self.statusbar.showMessage('Ready')
 
         self.initConnect()
@@ -86,7 +80,8 @@ class MainWindow(QMainWindow):
         if self.folder_name:
             self.browser_lineEdit.setText(self.folder_name)
         else:
-            QMessageBox.about(self, "Warning", "폴더를 선택해주세요.")
+            if(self.folder_name ==''):
+                QMessageBox.about(self, "Warning", "폴더를 선택해주세요.")
 
     def initLog(self):
         logTextBox = QTextEditLogger(self)
@@ -109,15 +104,17 @@ class MainWindow(QMainWindow):
     def initSetting(self):
         title =str(self.algorithm_comboBox.currentText())
         theme =str(self.theme_comboBox.currentText())
-        result_Array=[] # 일단 빈 값을 보내준다.
 
         self.start_pushButton.clicked.connect(self.startGrah)
-        self.mpa_radioButton.clicked.connect(lambda : self.radioButtonClicked(title,theme,result_Array))
-        self.max_radioButton.clicked.connect(lambda : self.radioButtonClicked(title,theme,result_Array))
+
 
     def startGrah(self):
+        print('======= start Graph ========== ')
         #randomZ_num =0 # 초기화 test
         print("num " + str(randomZ_num))
+
+        self.result_Array =[] #초기화
+        print(self.result_Array)
 
         result_array = Main(
             front_num=10,
@@ -129,96 +126,63 @@ class MainWindow(QMainWindow):
             p_value=0.5,
             extr_interval=30,
             model='nearest',  # 'nearest', 'kriging', 'neural'
-            interpol_method='cubic',  # 'nearest', 'linear', 'cubic'
             method='gradation',  # gradation contour rotate wireframe
-            matrix_num=3  # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
-        )
+            )
 
         title = str(self.algorithm_comboBox.currentText())
         theme = str(self.theme_comboBox.currentText())
-        result_Array = result_array
-        print(result_Array)
+        self.result_Array = result_array # self.result_Array[0] = mpa_grid_array , self.result_Array[1] = max_grid_array
 
-        self.radioButtonClicked(title, theme, result_Array)
-        self.mpa_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, result_Array))
-        self.max_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, result_Array))
+        self.radionClick = True
+        self.radioButtonClicked(title, theme, self.result_Array)
+        self.mpa_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, self.result_Array))
+        self.max_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, self.result_Array))
+
 
     def radioButtonClicked(self,title,theme,result_Array):
 
+
+        def onclick(event):
+
+            '''
+            print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
+                  ('double' if event.dblclick else 'single', event.button,
+                   event.x, event.y, event.xdata, event.ydata))
+            '''
+
+            self.location[0] = math.ceil(event.xdata)
+            self.location[1] = math.ceil(event.ydata)
+
+            locaton_str = 'x :' + str(self.location[0]) + 'y :' + str(self.location[1])
+            print(locaton_str)
+            self.statusbar.showMessage(locaton_str)
+
         if len(result_Array)>0:
 
-            #mpa_radioButton이 setCheck(True)이므로 그림을 미리 그려줘야 함.
-
-            self.MplWidget.canvas.axes.clear()
-            cf =  self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
-            self.MplWidget.canvas.axes.set_title("MPA " + title, pad=30)
-            self.MplWidget.canvas.draw()
+            if self.radionClick:
+                self.MplWidget.canvas.mpl_connect('button_press_event', onclick)
+                self.radionClick = False
 
             if self.mpa_radioButton.isChecked():
                 self.MplWidget.canvas.axes.clear()
-                cf =  self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
-                print(type(cf))
+                self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
                 self.MplWidget.canvas.axes.set_title("MPA "+ title, pad=30)
                 self.MplWidget.canvas.draw()
-
-                print('mpa ')
+                print('mpa')
                 self.resultTable()
-
-                cursor = self.MplWidget.cursor
-
-                @cursor.connect("add")
-                def on_add(sel):
-                    print('click')
-                    sel.annotation.get_bbox_patch().set(fc="white")
-                    ann = sel.annotation
-                    # `cf.collections.index(sel.artist)` is the index of the selected line
-                    # among all those that form the contour plot.
-                    # `cf.cvalues[...]` is the corresponding value.
-
-                    ann.set_text("{}\nz={:.5g}".format(
-                        ann.get_text(), cf.cvalues[cf.collections.index(sel.artist)]))
-                    get_array = ann.get_text().split("\n")
-
-                    #  1. 등고선을 클릭 하면 x_index, y_index 값을 int형으로 반올림을 해준다.
-                    x_index = int(float(get_array[0].split("=")[1])) - 1
-                    y_index = int(float(get_array[1].split("=")[1])) - 1
-
-                    # 2. 실제 센서 값을 (,100) - > (10, 10) 으로 reshape을 해주고 나서, z_value에 담아준다.
-                    z_value = result_Array[3].reshape(10, 10)
-
-                    # 3. matrix_num을 이용하여 편하게 매트릭스를 계산하기 위해 변환을 한다.
-                    for_num = int(float((self.matrix_num - 1) / 2))
-
-                    # 4. index가  범위에 벗어나게 되면 인덱스에 벗어났다고 알려준다.
-                    if (
-                                            x_index < for_num or y_index < for_num or x_index == self.front_num - for_num or y_index == self.end_num - for_num):
-                        print("click " + str(for_num) + " < index  < " + str(self.front_num - for_num))
-                    else:
-                        # 5. 실제 센서값과 가장 가까이 있는 값들을 출력해준다.
-                        print("x index : " + str(x_index))  # x_index
-                        print("y index : " + str(y_index))  # y_index
-                        print("click value" + str(z_value[x_index][y_index]))
-
-                        for i in range(x_index - for_num, x_index + for_num + 1):
-                            for j in range(y_index - for_num, y_index + for_num + 1):
-                                num = round(z_value[i][j], 0)
-                                print("z[" + str(i) + "]" + "[" + str(j) + "]" + "  " + str(num))
-                    print("\n")
-
 
             elif self.max_radioButton.isChecked():
                 self.MplWidget.canvas.axes.clear()
-                cf= self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
+                self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
                 self.MplWidget.canvas.axes.set_title("MAX "+ title, pad=30)
                 self.MplWidget.canvas.draw()
-
                 print('max ')
                 self.resultTable()
 
-
-
         else:
             print('no array')
+
+
 
 
     def resultTable(self):
