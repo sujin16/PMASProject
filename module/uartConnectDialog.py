@@ -76,8 +76,11 @@ class Ui_uartDialog(object):
 
 
     def saveAddress(self,uartDialog):
-        uartDialog.accept()
-
+        port = self.port_comboBox.currentText()
+        if len(port) <=0:
+            uartDialog.reject()
+        else:
+            uartDialog.accept()
 
 '''
 if __name__ == "__main__":
