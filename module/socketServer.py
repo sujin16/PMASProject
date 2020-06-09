@@ -3,7 +3,7 @@ import sys
 
 
 #data를 받으면 txt파일로 저장하기
-class Server(socketserver.BaseRequestHandler):
+class socketServer(socketserver.BaseRequestHandler):
 
     def handle(self):
         print('client address  :{0}\n'.format(self.client_address[0]))
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     try:
         print(type(ip))
-        server = socketserver.TCPServer((ip, port), Server)
+        server = socketserver.TCPServer((ip, port), socketServer)
         print('start...')
         print('server address  :{0}'.format(ip))
         server.serve_forever()

@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import socket
 
 FORMAT = [
     {"name": "IP ADDRESS", "format": "000.000.000.000;"}
@@ -69,6 +70,8 @@ class Ui_wifiDialog(object):
 
         self.retranslateUi(wifiDialog)
         QtCore.QMetaObject.connectSlotsByName(wifiDialog)
+
+        self.ip_lineEdit.setText(socket.gethostbyname(socket.getfqdn()))
         self.save_pushButton.clicked.connect(lambda  : self.saveAddress(wifiDialog))
 
     def retranslateUi(self, wifiDialog):
