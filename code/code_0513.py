@@ -124,7 +124,43 @@ class MainWindow(QMainWindow):
         if self.mode_check == Mode.no_connect:
             QMessageBox.about(self, "Warning", "Select Mode")
 
-        elif self.mode_check == Mode.wifi_connect:
+        if self.mode_check ==Mode.wifi_succeess_connect:
+            print('wifi success connect')
+            msg = QMessageBox()
+            msg.setWindowTitle('Info')
+            msg.setText('Already have a Server Connected. \n Do you want Disconnect ?')
+            msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+            result = msg.exec_()
+
+            if result == QMessageBox.Cancel:
+                print('Cancel')
+            elif result == QMessageBox.Ok:
+                self.socket_client.close()
+                self.mylogger.info('serial client close')
+                self.socket_server.close()
+                self.mylogger.info('serial server close')
+                self.statusbar.showMessage('Disconnect.. ')
+                self.mode_check = Mode.no_connect
+
+        if self.mode_check ==Mode.uart_succeess_connect:
+            print('uart success connect')
+            msg = QMessageBox()
+            msg.setWindowTitle('Info')
+            msg.setText('Already have a Server Connected. \n Do you want Disconnect ?')
+            msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+            result = msg.exec_()
+
+            if result == QMessageBox.Cancel:
+                print('Cancel')
+            elif result == QMessageBox.Ok:
+                self.socket_client.close()
+                self.mylogger.info('serial client close')
+                self.socket_server.close()
+                self.mylogger.info('serial server close')
+                self.statusbar.showMessage('Disconnect.. ')
+                self.mode_check = Mode.no_connect
+
+        if self.mode_check == Mode.wifi_connect:
             if self.ip != socket.gethostbyname(socket.getfqdn()):
                 QMessageBox.about(self, "Warming", "Again ip address")
 
@@ -182,11 +218,7 @@ class MainWindow(QMainWindow):
                         self.mode_check = Mode.wifi_succeess_connect
 
 
-
-
         elif self.mode_check == Mode.uart_connect:
-
-
             if self.uart_port:
                 self.mylogger.info('Connection Successful')
                 self.statusbar.showMessage('Connection Successful')
@@ -194,21 +226,6 @@ class MainWindow(QMainWindow):
             else:
                 QMessageBox.about(self, "Warming", "Again uart address")
 
-
-        elif self.mode_check == Mode.uart_success_connect:
-            msg = QMessageBox()
-            msg.setWindowTitle('Info')
-            msg.setText('Already have a Server Connected. \n Do you want Disconnect ?')
-            msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
-            result = msg.exec_()
-
-            if result ==QMessageBox.Cancel:
-                print('Cancel')
-            elif result ==QMessageBox.Ok:
-                self.mylogger.info('serial client close')
-                self.mylogger.info('serial server close')
-                self.statusbar.showMessage('Disconnect.. ')
-                self.mode_check = Mode.no_connect
 
 
     def initBrowser(self):
@@ -240,7 +257,7 @@ class MainWindow(QMainWindow):
 
     def startGrah(self):
 
-        #print(self.mode_check)  # no :0 wifi : 1 uart :2 wifi_success :3 uart_success :4
+        print(self.mode_check)  # no :0 wifi : 1 uart :2 wifi_success :3 uart_success :4
         #print(os.path.isdir(self.folder_name))
 
         if os.path.isdir(self.folder_name) == False :
