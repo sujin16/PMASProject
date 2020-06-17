@@ -5,17 +5,23 @@ import sys
 import os
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox,QApplication,QFileDialog,QMainWindow,QPlainTextEdit,QAbstractItemView, QTableWidgetItem
+from PyQt5.QtGui import  QIntValidator ,QDoubleValidator
 from PyQt5 import uic, QtGui,QtCore
 import logging
 import math
 import socket
-import socketserver
+
+import serial
+import time
+import signal
+import threading
 
 from module.wifiConnectDialog import Ui_wifiDialog
 from module.uartConnectDialog import Ui_uartDialog
 from module.socketServer import socketServer
 from module.interpolation import Main
-from module.valueZ import num as randomZ_num
+from module.test_interpolation import Main as test_Main
+from datetime import datetime
 
 PMPSUI = '../ui_Files/PMPS.ui'
 
@@ -31,11 +37,11 @@ class QTextEditLogger(logging.Handler):
 
 
 class Mode():
-    no_connect =0
+    no_connect = 0
     wifi_connect = 1
-    uart_connect =2
-    wifi_succeess_connect =3
-    uart_success_connect =4
+    uart_connect = 2
+    wifi_success_connect = 3
+    uart_success_connect = 4
 
 
 class MainWindow(QMainWindow):
@@ -47,16 +53,27 @@ class MainWindow(QMainWindow):
         self.mylogger = logging.getLogger("my")
         self.mylogger.setLevel(logging.INFO)
 
+        #wifi mode
         self.ip = ''
         self.ip_port = 9002 # ip port 는 9002로 고정되어 있음.
-        self.uart_port =''
         self.socket_server = ''
         self.socket_client =''
-        self.serial_server = ''
-        self.mode_check =Mode.no_connect
-        self.folder_name = os.getcwd() # 현재 파일 경로
-        self.file_name = ''
 
+        # uart mode
+        self.uart_port = ''
+        self.uart_baud =''
+        self.serial_server = ''
+        self.line = []  # 라인 단위로 데이터 가져올 리스트 변수
+        self.list = []
+        self.meaBool = False
+        self.exitThread = False  # 쓰레드 종료용 변수
+        self.serial_thread =None
+
+        self.mode_check =Mode.no_connect
+
+        self.machine_number ='1' # 하드코딩
+        self.folder_name = os.getcwd() # 현재 파일 경로
+        self.file_name = datetime.today().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
 
         self.theme =''
 
@@ -65,13 +82,17 @@ class MainWindow(QMainWindow):
         self.max_grid_array =[]
 
         self.location=[0,0,0] # location[0] = x 좌표, location[1] = y 좌표, location[2] = z 좌표,
-        self.radionClick =False
+
         self.statusbar.showMessage('Ready')
 
         self.initLog()
         self.initConnect()
         self.initBrowser()
         self.initSetting()
+
+        self.radionClick = True
+        self.mpa_radioButton.clicked.connect(self.radioButtonClicked)
+        self.max_radioButton.clicked.connect(self.radioButtonClicked)
 
     def initConnect(self):
         self.connect_comboBox.activated[str].connect(self.comboBoxFunction)
@@ -80,12 +101,10 @@ class MainWindow(QMainWindow):
     def comboBoxFunction(self,text):
 
         if 'Wifi' in text :
-            self.ip= self.openWifiDialog()
-            print(self.ip)
+            self.openWifiDialog()
             self.mode_check = Mode.wifi_connect
         elif 'Uart' in text:
-            self.uart_port = self.openUartDialog()
-            print(self.uart_port)
+            self.openUartDialog()
             self.mode_check = Mode.uart_connect
         else:
             self.mode_check = Mode.no_connect
@@ -100,6 +119,7 @@ class MainWindow(QMainWindow):
 
         if resp == QtWidgets.QDialog.Accepted:
             self.mylogger.info('IP : ' + ui.ip_lineEdit.text())
+            self.ip = ui.ip_lineEdit.text()
             return ui.ip_lineEdit.text()
         else:
             self.mylogger.warning('Again ip address')
@@ -113,49 +133,52 @@ class MainWindow(QMainWindow):
         resp = Dialog.exec_()
 
         if resp == QtWidgets.QDialog.Accepted:
-            self.mylogger.info('PORT : ' +ui.port_comboBox.currentText())
+            self.mylogger.info(
+                ' ' +ui.port_comboBox.currentText()
+                +' ' + ui.rate_comboBox.currentText())
+
+            self.uart_port = ui.port_comboBox.currentText()
+            self.uart_baud = int(ui.rate_comboBox.currentText())
             return ui.port_comboBox.currentText()
         else:
             self.mylogger.warning('Again uart address')
+            self.uart_port = None
+            self.uart_baud = None
             return None
 
     def ConnectFunction(self):
 
         if self.mode_check == Mode.no_connect:
+            print('no connect')
             QMessageBox.about(self, "Warning", "Select Mode")
 
-        if self.mode_check ==Mode.wifi_succeess_connect:
-            print('wifi success connect')
+        if self.mode_check == Mode.wifi_success_connect:
             msg = QMessageBox()
             msg.setWindowTitle('Info')
             msg.setText('Already have a Server Connected. \n Do you want Disconnect ?')
             msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
             result = msg.exec_()
 
-            if result == QMessageBox.Cancel:
-                print('Cancel')
-            elif result == QMessageBox.Ok:
+
+            if result == QMessageBox.Ok:
                 self.socket_client.close()
-                self.mylogger.info('serial client close')
+                self.mylogger.info('socket client close')
                 self.socket_server.close()
-                self.mylogger.info('serial server close')
+                self.mylogger.info('socket server close')
                 self.statusbar.showMessage('Disconnect.. ')
                 self.mode_check = Mode.no_connect
 
-        if self.mode_check ==Mode.uart_succeess_connect:
-            print('uart success connect')
+        if self.mode_check == Mode.uart_success_connect:
             msg = QMessageBox()
             msg.setWindowTitle('Info')
             msg.setText('Already have a Server Connected. \n Do you want Disconnect ?')
             msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
             result = msg.exec_()
 
-            if result == QMessageBox.Cancel:
-                print('Cancel')
-            elif result == QMessageBox.Ok:
-                self.socket_client.close()
-                self.mylogger.info('serial client close')
-                self.socket_server.close()
+            if result == QMessageBox.Ok:
+                print('Ok')
+                self.serial_server.close()
+
                 self.mylogger.info('serial server close')
                 self.statusbar.showMessage('Disconnect.. ')
                 self.mode_check = Mode.no_connect
@@ -171,8 +194,8 @@ class MainWindow(QMainWindow):
                     self.mylogger.info('create server socket')
                     self.statusbar.showMessage('create server socket')
                     self.socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    #self.socket_server.settimeout(1) # timeout for listening
-                    #self.socket_server.setdefaulttimeout(60)
+                    # self.socket_server.settimeout(1) # timeout for listening
+                    # self.socket_server.setdefaulttimeout(60)
                 except Exception as e:
                     print(e)
                     self.mylogger.error(e)
@@ -188,7 +211,7 @@ class MainWindow(QMainWindow):
                     self.mode_check = Mode.no_connect
 
                 try:
-                    self.socket_server.listen() # max 1 client : 한개의 클라이언트만 받는다.
+                    self.socket_server.listen()  # max 1 client : 한개의 클라이언트만 받는다.
                     self.mylogger.info('server socket listen')
                     self.statusbar.showMessage('server socket listen')
                 except Exception as e:
@@ -196,12 +219,12 @@ class MainWindow(QMainWindow):
                     self.mylogger.error(e)
                     self.mode_check = Mode.no_connect
 
-                stopped =False
+                stopped = False
                 while not stopped:
                     try:
                         self.socket_client, addr = self.socket_server.accept()
                         print(addr)
-                        self.mylogger.info('Connected by'+ addr[0]+ str(addr[1]))
+                        self.mylogger.info('Connected by' + addr[0] + str(addr[1]))
                     except socket.timeout as e:
                         print(e)
                         self.mylogger.error(e)
@@ -212,19 +235,87 @@ class MainWindow(QMainWindow):
                         self.mylogger.error(e)
                         self.mode_check = Mode.no_connect
                     else:
-                        stopped =True
+                        stopped = True
                         self.mylogger.info('Connection Successful')
                         self.statusbar.showMessage('Connection Successful')
-                        self.mode_check = Mode.wifi_succeess_connect
+                        self.mode_check = Mode.wifi_success_connect
 
 
-        elif self.mode_check == Mode.uart_connect:
+        if self.mode_check == Mode.uart_connect:
             if self.uart_port:
-                self.mylogger.info('Connection Successful')
-                self.statusbar.showMessage('Connection Successful')
-                self.mode_check = Mode.succeess_connect
+                try:
+                    signal.signal(signal.SIGINT, self.handler)
+                    self.serial_server  = serial.Serial(self.uart_port,self.uart_baud, timeout=0)
+                    print(self.serial_server)
+                    self.mylogger.info('Connection Successful')
+                    self.statusbar.showMessage('Connection Successful')
+                    self.mode_check = Mode.uart_success_connect
+                except Exception as e:
+                    print(e)
+                    self.mylogger.error(e)
             else:
                 QMessageBox.about(self, "Warming", "Again uart address")
+
+
+
+    # thread 종료용 signal function
+    def handler(self, signum, frame):
+        self.exitThread = True
+
+    # 데이터 처리 함수
+    def parsing_data(self, data):
+        tmp = ''.join(data)  # list로 들어 온 것을 스트링으로 합침
+        print(tmp)
+        return tmp
+
+    # 측정된 데이터 센서 값 출력 하고 list에 저장하기
+    def sensor_parsing_data(self, data):
+        tmp = ''.join(data)
+        print(tmp)
+        self.list.append(tmp)
+        return tmp
+
+    # 본 thread
+    def readThread(self, ser):
+
+        # thread가 종료될때까지
+        # Serial interfacce :  data를 stream으로 바꿔서 (직렬화,serialization) 한 번에 1 bit 씩 전송
+
+        join_path = os.path.join(self.folder_name,self.file_name)
+        print(join_path)
+        f= open(join_path,'w')
+        self.mylogger.info(self.file_name+' Open Write')
+        while not self.exitThread:
+            # 데이터가 있있다면
+            for c in ser.read():
+                self.line.append(chr(c))  # (integer, 0 ~ 255)를 ASCII character로 변환하고 line에 추가한다.
+
+                if c == 10:  # ASCII의 개행문자 10
+                    readystr = self.parsing_data(self.line)
+
+                    if (readystr == 'Transmission done\r\n'):
+                        self.meaBool = False
+                        f.close()
+                        self.mylogger.info(self.file_name + ' Close')
+                        #self.serial_thread.join()
+                        self.exitThread = True
+                        #print(self.serial_thread.is_alive())
+                        self.test_drawGraph()
+                        return None
+
+                    if (self.meaBool):
+                        readystr = self.sensor_parsing_data(self.line)
+                        if (readystr == '\n'):
+                            continue;
+                        else:
+                            #print('file write')
+                            readystr = readystr.strip('\n')
+                            f.write(readystr)
+
+                    if (readystr == 'Transmission Start\r\n'):
+                        self.meaBool = True
+
+                    del self.line[:]  # line list 원소를 다 지워버린다.
 
 
 
@@ -253,54 +344,120 @@ class MainWindow(QMainWindow):
 
 
     def initSetting(self):
+        #create Validator
+        self.onlyInt = QIntValidator()
+        self.onlyDouble = QDoubleValidator()
+
+        #restrict user input in QLineEdit
+        self.z_min_lineEdit.setValidator(self.onlyInt)
+        self.z_max_lineEdit.setValidator(self.onlyInt)
+        self.interval_lineEdit.setValidator(self.onlyInt)
+        self.sample_rate_lineEdit.setValidator(self.onlyDouble)
+        self.p_value_lineEdit.setValidator(self.onlyDouble)
+
+        # add button click event
         self.start_pushButton.clicked.connect(self.startGrah)
 
+    def checkSetting(self):
+        print('check ')
+        return (self.front_senserNum_spinBox.value() >0 and
+                self.end_senserNum_spinBox.value() > 0 and
+                len(self.z_min_lineEdit.text()) > 0 and
+                len(self.z_max_lineEdit.text()) >0  and
+                len(self.p_value_lineEdit.text()) and
+                len(self.sample_rate_lineEdit.text()) >0)
+
     def startGrah(self):
-
-        print(self.mode_check)  # no :0 wifi : 1 uart :2 wifi_success :3 uart_success :4
-        #print(os.path.isdir(self.folder_name))
-
-        if os.path.isdir(self.folder_name) == False :
+        if os.path.isdir(self.folder_name) == False:
             QMessageBox.about(self, "Warning", "Not Exist Directory")
+            return  None
+
+        if self.checkSetting() == False:
+            QMessageBox.about(self, "Warning", "Check Setting")
+            return  None
 
         if self.mode_check == Mode.no_connect:
             QMessageBox.about(self, "Warning", "Disconnect Server")
+            return None
 
-        elif self.mode_check == Mode.wifi_succeess_connect:
-            print('======= start Graph ========== ')
-            #randomZ_num =0 # 초기화 test
-            print("num " + str(randomZ_num))
+        elif self.mode_check == Mode.wifi_success_connect:
+            #원래는 uart connect 처럼 , file을 저장한 후  draw graph
+            self.drawGraph()
 
-            self.result_Array =[] #초기화
-            print(self.result_Array)
+        elif self.mode_check == Mode.uart_success_connect:
+            # serial 읽을 thread 생성
+            self.mylogger.info('Read sensor data')
+            self.serial_thread = threading.Thread(target=self.readThread, args=(self.serial_server,))
 
-            result_array = Main(
-                front_num=10,
-                end_num=10,
-                theme=str(self.theme_comboBox.currentText()),
-                min_bound=0,
-                max_bound=110,
-                interval=1000,
-                p_value=0.5,
-                extr_interval=30,
-                model='nearest',  # 'nearest', 'kriging', 'neural'
-                method='gradation',  # gradation contour rotate wireframe
-                )
+            self.serial_thread.start()
+            print(self.serial_thread)
 
-            title = str(self.algorithm_comboBox.currentText())
-            theme = str(self.theme_comboBox.currentText())
-            self.result_Array = result_array # self.result_Array[0] = mpa_grid_array , self.result_Array[1] = max_grid_array
 
-            self.radionClick = True
-            self.radioButtonClicked(title, theme, self.result_Array)
-            self.mpa_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, self.result_Array))
-            self.max_radioButton.clicked.connect(lambda: self.radioButtonClicked(title, theme, self.result_Array))
+    def drawGraph(self):
+        self.mylogger.info('draw 3d chart')
 
-        elif self.mode_check == Mode.uart_succeess_connect:
-            print(self.mode_check)  # no :0 wifi : 1 uart :2 wifi_success :3 uart_success :4
+        self.result_Array = []  # 초기화
+        print(self.result_Array)
 
-    def radioButtonClicked(self,title,theme,result_Array):
+        result_array = Main(
+            front_num=int(self.front_senserNum_spinBox.text()),
+            end_num=int(self.end_senserNum_spinBox.text()),
+            theme=self.theme_comboBox.currentText(),
+            min_bound=int(self.z_min_lineEdit.text()),
+            max_bound=int(self.z_max_lineEdit.text()),
+            interval=int(self.interval_lineEdit.text()),
+            p_value=float(self.p_value_lineEdit.text()),
+            extr_interval=30,
+            model=self.algorithm_comboBox.currentText(),  # 'nearest', 'kriging', 'neural'
+            method=self.method_comboBox.currentText()  # gradation contour rotate wireframe
+        )
 
+        title = str(self.algorithm_comboBox.currentText())
+        theme = str(self.theme_comboBox.currentText())
+        self.result_Array = result_array  # self.result_Array[0] = mpa_grid_array , self.result_Array[1] = max_grid_array
+
+        self.radionClick = True
+        self.radioButtonClicked(title, theme, self.result_Array)
+        self.mpa_radioButton.clicked.connect(
+            lambda: self.radioButtonClicked(title, theme, self.result_Array))
+        self.max_radioButton.clicked.connect(
+            lambda: self.radioButtonClicked(title, theme, self.result_Array))
+
+
+    def test_drawGraph(self):
+        self.mylogger.info('draw 3d chart')
+
+        self.result_Array = []  # 초기화
+        print(self.result_Array)
+
+        result_array = test_Main(
+            front_num=int(self.front_senserNum_spinBox.text()),
+            end_num=int(self.end_senserNum_spinBox.text()),
+            theme=self.theme_comboBox.currentText(),
+            min_bound=int(self.z_min_lineEdit.text()),
+            max_bound=int(self.z_max_lineEdit.text()),
+            interval=int(self.interval_lineEdit.text()),
+            p_value=float(self.p_value_lineEdit.text()),
+            extr_interval=30,
+            model=self.algorithm_comboBox.currentText(),  # 'nearest', 'kriging', 'neural'
+            method=self.method_comboBox.currentText(),  # gradation contour rotate wireframe
+            folder_path=self.folder_name,
+            file_name=self.file_name
+        )
+
+        self.title = str(self.algorithm_comboBox.currentText())
+        self.theme = str(self.theme_comboBox.currentText())
+
+        self.mpa_grid_array = result_array['MPA']
+        self.max_grid_array = result_array['MAX']
+
+        print(result_array)
+
+        self.radionClick = True
+
+
+
+    def radioButtonClicked(self):
 
         def onclick(event):
 
@@ -317,7 +474,7 @@ class MainWindow(QMainWindow):
             print(locaton_str)
             self.statusbar.showMessage(locaton_str)
 
-        if len(result_Array)>0:
+        if len(self.mpa_grid_array) > 0:
 
             if self.radionClick:
                 self.MplWidget.canvas.mpl_connect('button_press_event', onclick)
@@ -325,23 +482,22 @@ class MainWindow(QMainWindow):
 
             if self.mpa_radioButton.isChecked():
                 self.MplWidget.canvas.axes.clear()
-                self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
-                self.MplWidget.canvas.axes.set_title("MPA "+ title, pad=30)
+                self.MplWidget.canvas.axes.contourf(self.mpa_grid_array[0], self.mpa_grid_array[1], self.mpa_grid_array[2], cmap=self.theme)
+                self.MplWidget.canvas.axes.set_title("MPA "+self.title, pad=30)
                 self.MplWidget.canvas.draw()
                 print('mpa')
                 self.resultTable()
 
             elif self.max_radioButton.isChecked():
                 self.MplWidget.canvas.axes.clear()
-                self.MplWidget.canvas.axes.contourf(result_Array[0], result_Array[1], result_Array[2], cmap=theme)
-                self.MplWidget.canvas.axes.set_title("MAX "+ title, pad=30)
+                self.MplWidget.canvas.axes.contourf(self.max_grid_array[0], self.max_grid_array[1], self.max_grid_array[2], cmap=self.theme)
+                self.MplWidget.canvas.axes.set_title("MAX "+self.title, pad=30)
                 self.MplWidget.canvas.draw()
                 print('max ')
                 self.resultTable()
 
         else:
             print('no array')
-
 
 
 
