@@ -10,9 +10,7 @@ from PyQt5 import uic, QtGui,QtCore
 import logging
 import math
 import socket
-
 import serial
-import time
 import signal
 import threading
 
@@ -80,6 +78,7 @@ class MainWindow(QMainWindow):
         self.result_Array =[]
         self.mpa_grid_array =[]
         self.max_grid_array =[]
+        self.table_array = []
 
         self.location=[0,0,0] # location[0] = x 좌표, location[1] = y 좌표, location[2] = z 좌표,
 
@@ -452,7 +451,6 @@ class MainWindow(QMainWindow):
         self.max_grid_array = result_array['MAX']
 
         print(result_array)
-
         self.radionClick = True
 
 
@@ -461,18 +459,35 @@ class MainWindow(QMainWindow):
 
         def onclick(event):
 
+            try:
+
+                self.location[0] = math.ceil(event.xdata)
+                self.location[1] = math.ceil(event.ydata)
+
+                if self.mpa_radioButton.isChecked():
+                    # 10 * 10 이런식으로 grid_array shape을 바꾸어 주기.
+                    self.table_array = self.mpa_grid_array[3].reshape(int(self.front_senserNum_spinBox.text()),
+                                                                      int(self.end_senserNum_spinBox.text()))
+                elif self.max_radioButton.isChecked():
+                    self.table_array = self.max_grid_array[3].reshape(int(self.front_senserNum_spinBox.text()),
+                                                                      int(self.end_senserNum_spinBox.text()))
+
+                self.location[2] = self.table_array[self.location[0] - 1][self.location[1] - 1]
+
+                locaton_str = 'x :' + str(self.location[0]) + 'y :' + str(self.location[1]) + ' z : ' + str(+self.location[2])
+                print(locaton_str)
+                self.statusbar.showMessage(locaton_str)
+
+                self.resultTable()
+            except Exception:
+                self.statusbar.showMessage('again click  point')
+
             '''
             print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
                   ('double' if event.dblclick else 'single', event.button,
                    event.x, event.y, event.xdata, event.ydata))
             '''
 
-            self.location[0] = math.ceil(event.xdata)
-            self.location[1] = math.ceil(event.ydata)
-
-            locaton_str = 'x :' + str(self.location[0]) + 'y :' + str(self.location[1])
-            print(locaton_str)
-            self.statusbar.showMessage(locaton_str)
 
         if len(self.mpa_grid_array) > 0:
 
@@ -485,16 +500,12 @@ class MainWindow(QMainWindow):
                 self.MplWidget.canvas.axes.contourf(self.mpa_grid_array[0], self.mpa_grid_array[1], self.mpa_grid_array[2], cmap=self.theme)
                 self.MplWidget.canvas.axes.set_title("MPA "+self.title, pad=30)
                 self.MplWidget.canvas.draw()
-                print('mpa')
-                self.resultTable()
 
             elif self.max_radioButton.isChecked():
                 self.MplWidget.canvas.axes.clear()
                 self.MplWidget.canvas.axes.contourf(self.max_grid_array[0], self.max_grid_array[1], self.max_grid_array[2], cmap=self.theme)
                 self.MplWidget.canvas.axes.set_title("MAX "+self.title, pad=30)
                 self.MplWidget.canvas.draw()
-                print('max ')
-                self.resultTable()
 
         else:
             print('no array')
@@ -502,15 +513,19 @@ class MainWindow(QMainWindow):
 
 
     def resultTable(self):
+        print('==== resultTable  ====')
         self.table_size_comboBox.activated[str].connect(self.makeTable)
 
+    # - >  for_num으로 변환을 해준다. - >
     def makeTable(self,text):
+        print('make Table')
+
         size =0
 
-        if '3' in text:
+        if '3' in text or 3 == text:
             self.tableWidget.clear()
             size = 3
-        elif '5' in text:
+        elif '5' in text or 5 == text:
             self.tableWidget.clear()
             size = 5
 
@@ -525,25 +540,51 @@ class MainWindow(QMainWindow):
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.horizontalHeader().setVisible(False)
 
+        for_num = int(float((size - 1) / 2))
+
+        value_list = [[0 for i in range(size)] for j in range(size)]
+        index_list = [[0 for i in range(size)] for j in range(size)]
+
+        row_index =0
+        colum_index = 0
+
+        for i in range(self.location[0] - for_num, self.location[0]+ for_num + 1):
+            for j in range(self.location[1] - for_num, self.location[1] + for_num + 1):
+
+                index_list[row_index][colum_index] = str(i+1) + "X" + str(j+1)
+                try:
+                    value_list[row_index][colum_index]  = self.table_array[i][j]
+                except IndexError:
+                    value_list[row_index][colum_index] = '-'
+
+                colum_index = colum_index +1
+
+            colum_index =0
+            row_index = row_index +1
+
+
         for i in range(0,size*2):
             for j in range(0,size):
                 if i % 2== 0:
-                    self.tableWidget.setItem(i,j,QTableWidgetItem(str(i) +" X " +str(j)))
+                    self.tableWidget.setItem(i,j,QTableWidgetItem(index_list[i//2][j]))
                     self.tableWidget.item(i,j).setBackground(QtGui.QColor(233, 233, 233))
                     self.tableWidget.item(i, j).setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
                     self.tableWidget.item(i,j).setFont(QtGui.QFont("Arial",8))
 
                 else:
-                    self.tableWidget.setItem(i, j, QTableWidgetItem("a"))
+                    value = value_list[i//2][j]
+                    print(str(i//2)  + " : " + str(j))
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
                     self.tableWidget.item(i, j).setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
                     self.tableWidget.item(i, j).setFont(QtGui.QFont("Arial", 11))
 
-        self.tableWidget.item((size//2)*2+1,(size//2)*2-1).setBackground(QtGui.QColor(1,1,1))
-        self.tableWidget.item((size//2)*2+1,(size//2)*2-1).setForeground(QtGui.QColor(255, 255, 255))
+                    if value ==self.location[2] :
+                        self.tableWidget.item(i, j).setBackground(QtGui.QColor(1,1,1))
+                        self.tableWidget.item(i, j).setForeground(QtGui.QColor(255, 255, 255))
+
 
         #표 안에 글자는 수정할 수 없다.
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
 
 
 '''
