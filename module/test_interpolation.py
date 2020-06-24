@@ -19,8 +19,12 @@ end_time= ''
 full_order = 1
 machine_number = 0
 sen_array = np.array([])
+
 mpa_array = np.array([])
 max_array = np.array([])
+
+mpa_grid_array =[]
+max_grid_array =[]
 
 class Plot:
     def __init__(self, front_num, end_num, theme, min_bound, max_bound, interval, p_value, extr_interval, model, method,folder_path, file_name):
@@ -37,7 +41,7 @@ class Plot:
         self.method = method
         self.interpol_method = 'cubic'
         self.model = model
-        self.folder_path = folder_path
+        self.folder_path = folder_path +'/'
         self.file_name = file_name
 
         self.x = []
@@ -155,7 +159,7 @@ class Plot:
         #1.먼저 파일 읽기
         f = open(self.folder_path+ self.file_name, 'r')
         def update(i):
-            global mpa_array, max_array, sen_array, full_order
+            global mpa_grid_array, max_grid_array, sen_array, full_order,mpa_array, max_array
 
 
             for i in range(0,self.front_num):
@@ -166,19 +170,51 @@ class Plot:
                     ani._stop()
 
                     if len(mpa_array) == self.front_num * self.end_num:
-                        #print(mpa_array)
                         mpa_array = mpa_array.astype('int32')
+
+                        update_data = np.c_[self.x, self.y, mpa_array]
+
+                        if (title == 'Nearest'):
+                            update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
+                        if (title == 'Kriging'):
+                            update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
+                        if (title == 'Neural net'):
+                            update_extra = self.neural_net(extrapolation_spots, update_data)
+
+                        gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
+
+                        mpa_grid_array.append(gridx_update)  # 0. 보간법이 적용된 x 값
+                        mpa_grid_array.append(gridy_update)  # 1. 보간법이 적용된 y 값
+                        mpa_grid_array.append(gridz_update)  # 2. 보간법이 적용된 z 값
+                        mpa_grid_array.append(mpa_array)  # 3. 실제 센서 값
+
                     else:
                         mpa_array =[]
                         print('error mpa array')
 
                     if len(max_array) == self.front_num * self.end_num:
-                        # print(max_array)
                         max_array = max_array.astype('int32')
+
+                        update_data = np.c_[self.x, self.y, max_array]
+
+                        if (title == 'Nearest'):
+                            update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
+                        if (title == 'Kriging'):
+                            update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
+                        if (title == 'Neural net'):
+                            update_extra = self.neural_net(extrapolation_spots, update_data)
+
+                        gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
+
+                        max_grid_array.append(gridx_update)  # 0. 보간법이 적용된 x 값
+                        max_grid_array.append(gridy_update)  # 1. 보간법이 적용된 y 값
+                        max_grid_array.append(gridz_update)  # 2. 보간법이 적용된 z 값
+                        max_grid_array.append(max_array)  # 3. 실제 센서 값'
                     else:
                         max_array =[]
                         print('error max array')
 
+                    plt.close('all')
                     return None
 
                 else:
@@ -202,7 +238,7 @@ class Plot:
                         if current_full_order == full_order + 1:
                             if len(sen_array) == self.front_num * self.end_num:
                                 print('full_order success ' + str(full_order))
-                                print(sen_array)
+                                #print(sen_array)
                                 full_order = full_order + 1
                                 sen_array = np.array([])
                                 a_array = line_arrray[3:]
@@ -210,7 +246,7 @@ class Plot:
                                 sen_array = np.append(sen_array, a_array)
                             else:
                                 print('full_order error ' + str(full_order))
-                                full_order = full_order + 1
+                                #full_order = full_order + 1
                                 sen_array = np.array([])
                                 a_array = line_arrray[3:]
                                 a_array[0] = a_array[0].split(':')[1]
@@ -224,7 +260,6 @@ class Plot:
 
             sen_array = sen_array.astype('int32')
             update_data = np.c_[self.x, self.y, sen_array]
-            print(update_data)
 
             if (title == 'Nearest'):
                 update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
@@ -279,31 +314,28 @@ def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_
     plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method, folder_path,file_name)
     # 2. plot main 함수 실행
     plot.main()
-    return {'MPA' : mpa_array , 'MAX' : max_array}
+    return {'MPA' : mpa_grid_array , 'MAX' : max_grid_array}
 
 
-'''
-result = Main(
-     front_num = 10,
-     end_num = 10,
-     theme="coolwarm",
-     min_bound=20000,
-     max_bound=30000,
-     interval=1000,
-     p_value=0.5,
-     extr_interval=30,
-     model='Nearest',  # 'nearest', 'Kriging', 'neural'
-     method='gradation', # gradation contour rotate wireframe,
-     folder_path = 'D:/2019_2_intern/Project/0511Project/code/',
-     file_name = '2020.06.16.12.06.(Machine1).txt'
-)
 
-print('---------  end result  ------------')
-
-print(result)
-
-#print(result)
-sys.exit()
-
-
-'''
+# result = Main(
+#      front_num = 10,
+#      end_num = 10,
+#      theme="coolwarm",
+#      min_bound=20000,
+#      max_bound=30000,
+#      interval=1000,
+#      p_value=0.5,
+#      extr_interval=30,
+#      model='Nearest',  # 'nearest', 'Kriging', 'neural'
+#      method='gradation', # gradation contour rotate wireframe,
+#      folder_path = 'D:/2019_2_intern/Project/0511Project/code/',
+#      file_name = '2020.06.24.09.06.(Machine1).txt'
+# )
+#
+# print('---------  end result  ------------')
+#
+# print(result)
+#
+# #print(result)
+# sys.exit()
