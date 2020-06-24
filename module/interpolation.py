@@ -47,14 +47,14 @@ class Plot:
         self.sample_data = np.c_[self.x, self.y, z]
 
     def main(self):
-        if (self.model == 'neural'):
-            self.plot(method=self.method, title='neural net')
+        if (self.model == 'Neural'):
+            self.plot(method=self.method, title='Neural net')
 
-        if (self.model == 'kriging'):
-            self.plot(method=self.method, title='kriging')
+        if (self.model == 'Kriging'):
+            self.plot(method=self.method, title='Kriging')
 
-        if (self.model == 'nearest'):
-            self.plot(method=self.method, title='nearest')
+        if (self.model == 'Nearest'):
+            self.plot(method=self.method, title='Nearest')
 
 
     def neural_net(self,extrapolation_spots, data):
@@ -113,8 +113,8 @@ class Plot:
         z, ss = OK.execute('grid', gridx, gridy)
         return gridx, gridy, z, ss
 
-    def extrapolation(self,data, extrapolation_spots, model='nearest'):
-        if model == 'kriging':
+    def extrapolation(self,data, extrapolation_spots, model='Nearest'):
+        if model == 'Kriging':
             xx, yy, zz, ss = self.kriging(data, extrapolation_spots)
 
             new_points = np.zeros((len(yy) * len(zz), 3))
@@ -128,7 +128,7 @@ class Plot:
             combined = np.concatenate((data, new_points))
             return combined
 
-        if model == 'nearest':
+        if model == 'Nearest':
             new_points = np.zeros((len(extrapolation_spots), 3))
             new_points[:, 0] = extrapolation_spots[:, 0]
             new_points[:, 1] = extrapolation_spots[:, 1]
@@ -144,7 +144,7 @@ class Plot:
 
 
 
-    def plot(self,method='gradation', title='nearest'):
+    def plot(self,method='gradation', title='Nearest'):
 
         extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
 
@@ -160,7 +160,7 @@ class Plot:
 
                 print(start_time)
                 print(end_time)
-
+                plt.close('all')
                 return now
 
             if (update_z.all()):
@@ -171,11 +171,11 @@ class Plot:
                 total[now] = update_z
                 update_data = np.c_[self.x, self.y, update_z]
 
-                if (title == 'nearest'):
-                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='nearest')
-                if (title == 'kriging'):
-                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='kriging')
-                if (title == 'neural net'):
+                if (title == 'Nearest'):
+                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
+                if (title == 'Kriging'):
+                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
+                if (title == 'Neural net'):
                     update_extra = self.neural_net(extrapolation_spots, update_data)
 
                 gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
@@ -223,29 +223,23 @@ def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_
     plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method)
     # 2. plot main 함수 실행
     plot.main()
-    print(sys)
     #sys.exit()
+
     return grid_array
 
 
-'''
-result = Main(
-     front_num = 10,
-     end_num = 10,
-     theme="coolwarm",
-     min_bound=0,
-     max_bound=110,
-     interval=1000,
-     p_value=0.5,
-     extr_interval=30,
-     model='nearest',  # 'nearest', 'kriging', 'neural'
-     method='gradation'# gradation contour rotate wireframe
-     )
+# result = Main(
+#      front_num = 10,
+#      end_num = 10,
+#      theme="coolwarm",
+#      min_bound=0,
+#      max_bound=110,
+#      interval=1000,
+#      p_value=0.5,
+#      extr_interval=30,
+#      model='Nearest',  # 'Nearest', 'Kriging', 'Neural'
+#      method='gradation'# gradation contour rotate wireframe
+#      )
+# print('---------  end result  ------------')
 
-print('---------  end result  ------------')
-print(result)
-sys.exit()
-
-
-'''
 

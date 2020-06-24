@@ -1,41 +1,23 @@
-from module.matrixGraph import Main, grid_array
-from module.valueZ import  num
-print('hello')
+# import os
+# import fnmatch
+# current_path = os.getcwd() # 현재 파일 경로
+# current_name = "2020.06.23.11.06.(Machine1).txt"
+# current_name =current_name[:-4]
+#
+#
+# '''
+# 동일한 파일명이 있다면, 새로운 파일명을 만들어주기.
+#
+# '''
+# name = '2020.06.23.11.06.(Machine1)(2).txt'
+# for filename in os.listdir(path = current_path):
+#     if fnmatch.fnmatch(filename , current_name + "*.txt"):
+#        print(filename)
+#
 
-result = Main(
-     front_num = 10,
-     end_num = 10,
-     theme="coolwarm",
-     min_bound=0,
-     max_bound=110,
-     interval=1000,
-     p_value=0.5,
-     extr_interval=30,
-     model='nearest',  # 'nearest', 'kriging', 'neural'
-     interpol_method='cubic',  # 'nearest', 'linear', 'cubic'
-     method='gradation', # gradation contour rotate wireframe
-     matrix_num = 3 # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
-)
 
-print('nice to meet you')
-print(result)
+def multiply():
+	print('a')
 
-print("num"+ str(num))
 
-result2 = Main(
-     front_num = 10,
-     end_num = 10,
-     theme="coolwarm",
-     min_bound=0,
-     max_bound=110,
-     interval=1000,
-     p_value=0.5,
-     extr_interval=30,
-     model='nearest',  # 'nearest', 'kriging', 'neural'
-     interpol_method='cubic',  # 'nearest', 'linear', 'cubic'
-     method='gradation', # gradation contour rotate wireframe
-     matrix_num = 3 # 3 5 7 9 ..  2n+1 (n>=1)의 값만 가능
-)
-
-print('nice to meet you')
-print(result2)
+multiply()

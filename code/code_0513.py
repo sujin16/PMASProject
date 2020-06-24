@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
         self.mpa_radioButton.clicked.connect(self.radioButtonClicked)
         self.max_radioButton.clicked.connect(self.radioButtonClicked)
 
-
+        print(datetime.now())
         self.statusbar.showMessage('Ready')
         self.initLog()
         self.initConnect()
@@ -285,7 +285,7 @@ class MainWindow(QMainWindow):
 
         # thread가 종료될때까지
         # Serial interfacce :  data를 stream으로 바꿔서 (직렬화,serialization) 한 번에 1 bit 씩 전송
-        self.file_name = datetime.today().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
+        self.file_name = datetime.now().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
         join_path = os.path.join(self.folder_name,self.file_name)
         print(join_path)
         self.mylogger.info(self.file_name+' Open Write')
@@ -327,10 +327,6 @@ class MainWindow(QMainWindow):
                            self.meaBool = True
                            f = open(join_path, 'w')
                            self.radionClick = False
-
-                           if self.mplWidgetClick >0:
-
-                               print('mplWidget Click : ' + str(self.MplWidget.canvas.mpl_disconnect(self.mplWidgetClick)))
 
                        del self.line[:]  # line list 원소를 다 지워버린다.
 

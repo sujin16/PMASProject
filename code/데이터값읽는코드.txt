@@ -12,8 +12,7 @@ a_array[3].split(':')[1] ~ a_array[13] # 실제 값 데이터
 '''
 
 size = 10
-full_order = 1
-current_full_order =0
+full_order = 1urrent_full_order =0
 
 line_arrray =  []
 machine_number = 0
@@ -23,7 +22,7 @@ mpa_array = np.array([])
 max_array = np.array([])
 
 # readline_all.py
-f = open("2020.06.16.12.06.(Machine1).txt", 'r')
+f = open("2020.06.16.10.06.(Machine1).txt", 'r')
 while True:
     line = f.readline()
     if not line: break
@@ -86,16 +85,3 @@ if len(max_array)  ==size * size :
     print(max_array)
 else:
     print('error max array')
-
-x = []
-y = []
-
-for i in range(10):
-    for j in range(10):
-        x.append(i + 1)
-        y.append(j + 1)
-
-
-z = np.random.uniform(low=0, high=40, size=(10 * 10,))
-sample_data = np.c_[x, y, sen_array]
-print(sample_data)

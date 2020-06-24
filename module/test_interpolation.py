@@ -158,14 +158,19 @@ class Plot:
         extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
         #1.먼저 파일 읽기
         f = open(self.folder_path+ self.file_name, 'r')
+        print(self.folder_path+ self.file_name)
+
         def update(i):
             global mpa_grid_array, max_grid_array, sen_array, full_order,mpa_array, max_array
-
 
             for i in range(0,self.front_num):
 
                 line = f.readline()
+                print('======================')
+                print(line)
                 if not line:
+                    f.close()
+
                     fig.suptitle('finish', fontsize=18)
                     ani._stop()
 

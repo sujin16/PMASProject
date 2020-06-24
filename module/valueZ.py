@@ -1,11 +1,12 @@
 import numpy as np
+import time
 num =0
-z_min = 0
-z_max =  40
-num_frame =10
+z_min = 50
+z_max =  100
+num_frame =20
 
 folder_name = 'D:/2019_2_intern/Project/0511Project/data/'
-file_name = 'machine.txt'
+file_name = 'machine1.txt'
 machine_number = '0'
 
 def read_temp(sensor):
@@ -14,10 +15,12 @@ def read_temp(sensor):
     if(num<num_frame):
         num =num+1
         temp = np.random.uniform(low=z_min, high=z_max, size=(100,))
-        print(num)
 
     if (num >= num_frame):
         temp = np.array([])
+        num  = 0
+
+    print('num '+ str(num))
     return temp
 
 
@@ -32,9 +35,11 @@ def writeSensor():
         for y in range(0,10):  # matrix size. 센서 행
             value =''
             for x in range(1, 11):  # senser random value 만들어 주기
-                value += str(np.random.randint(21238, 30000)) + ","
                 if (x == 10):
                     value += str(np.random.randint(21238, 30000))
+                else:
+                    value += str(np.random.randint(21238, 30000)) + ","
+
 
             sensor_str = 'SEN,' + str(i)+ ','+ machine_number+ ','+str(y)+':'+value+"\n"
             f.write(sensor_str)
@@ -44,9 +49,11 @@ def writeSensor():
     for y in range(0, 10):
         value = ''
         for x in range(1, 11):  # senser random value 만들어 주기
-            value += str(np.random.randint(21238, 30000)) + ","
             if (x == 10):
                 value += str(np.random.randint(21238, 30000))
+            else:
+                value += str(np.random.randint(21238, 30000)) + ","
+
 
         mpa_result = 'MPA,' + '0' + ',' + machine_number + ',' + str(y) + ':' + value + "\n"
         f.write(mpa_result)
@@ -54,9 +61,11 @@ def writeSensor():
     for y in range(0, 10):
         value = ''
         for x in range(1, 11):  # senser random value 만들어 주기
-            value += str(np.random.randint(21238, 30000)) + ","
             if (x == 10):
                 value += str(np.random.randint(21238, 30000))
+            else:
+                value += str(np.random.randint(21238, 30000)) + ","
+
 
         max_result = 'MAX,' + '0' + ',' + machine_number + ',' + str(y) + ':' + value + "\n"
         f.write(max_result)
@@ -91,3 +100,6 @@ def readFile():
 
 
     f.close()
+
+
+writeSensor()

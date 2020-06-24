@@ -36,37 +36,25 @@ class socketServer(socketserver.BaseRequestHandler):
 
 
         '''
-
         sock.close()
         print('socket disconnect\n')
-
-
         #client에게 data보내기
-
         sock.send(buf)
         print('송신:{0}'.format(rec))
-
         sock.close()
         print('socket server disconnect')
-
         '''
 
 
 
 '''
 if __name__ == '__main__':
-
     #ip = '192.168.0.2'
-
     #port = 9002
-
     #ip = '127.0.0.1'
-
     #port = 9999
-
     ip = '127.0.0.1'
     port = 9999
-
     try:
         print(type(ip))
         server = socketserver.TCPServer((ip, port), socketServer)
@@ -75,10 +63,6 @@ if __name__ == '__main__':
         server.serve_forever()
     except:
         print('check ipconfig ip')
-
     server.server_close()
     print('server close')
-
-
 '''
-
