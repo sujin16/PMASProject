@@ -24,6 +24,7 @@ from datetime import datetime
 PMPSUI = '../ui_Files/PMPS.ui'
 
 
+#Log 창 만드는 class
 class QTextEditLogger(logging.Handler):
     def __init__(self, parent):
         super().__init__()
@@ -33,7 +34,7 @@ class QTextEditLogger(logging.Handler):
         msg = self.format(record)
         self.widget.appendPlainText(msg)
 
-
+# connect mode class
 class Mode():
     no_connect = 0
     wifi_connect = 1
@@ -71,32 +72,35 @@ class MainWindow(QMainWindow):
 
         self.machine_number ='1' # 하드코딩
         self.folder_name = os.getcwd() # 현재 파일 경로
-        self.file_name = datetime.today().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
+        self.file_name =None
 
         self.theme =''
-
-        self.result_Array =[]
+        self.finish_line =0
         self.mpa_grid_array =[]
         self.max_grid_array =[]
         self.table_array = []
 
         self.location=[0,0,0] # location[0] = x 좌표, location[1] = y 좌표, location[2] = z 좌표,
 
-        self.statusbar.showMessage('Ready')
+        self.mplWidgetClick=''
+        self.radionClick = True
+        self.mpa_radioButton.clicked.connect(self.radioButtonClicked)
+        self.max_radioButton.clicked.connect(self.radioButtonClicked)
 
+
+        self.statusbar.showMessage('Ready')
         self.initLog()
         self.initConnect()
         self.initBrowser()
         self.initSetting()
 
-        self.radionClick = True
-        self.mpa_radioButton.clicked.connect(self.radioButtonClicked)
-        self.max_radioButton.clicked.connect(self.radioButtonClicked)
 
+    # connect 창 설정 함수(1)
     def initConnect(self):
         self.connect_comboBox.activated[str].connect(self.comboBoxFunction)
         self.connect_pushButton.clicked.connect(self.ConnectFunction)
 
+    # connect 창 설정 함수(2)
     def comboBoxFunction(self,text):
 
         if 'Wifi' in text :
@@ -110,6 +114,7 @@ class MainWindow(QMainWindow):
 
 
     #https://stackoverflow.com/questions/58655570/how-to-access-qlineedit-in-qdialog 참고
+    # connect 창 설정 함수(3)
     def openWifiDialog(self):
         Dialog = QtWidgets.QDialog(self)
         ui = Ui_wifiDialog()
@@ -124,7 +129,7 @@ class MainWindow(QMainWindow):
             self.mylogger.warning('Again ip address')
             return None
 
-
+    # connect 창 설정 함수(4)
     def openUartDialog(self):
         Dialog = QtWidgets.QDialog(self)
         ui = Ui_uartDialog()
@@ -145,6 +150,7 @@ class MainWindow(QMainWindow):
             self.uart_baud = None
             return None
 
+    # connect 창 설정 함수(5) : mode에 따라서 연결을 잘 할 수 있도록 도와줌.
     def ConnectFunction(self):
 
         if self.mode_check == Mode.no_connect:
@@ -261,72 +267,89 @@ class MainWindow(QMainWindow):
     def handler(self, signum, frame):
         self.exitThread = True
 
-    # 데이터 처리 함수
+    # uart 연결 데이터 처리 함수
     def parsing_data(self, data):
         tmp = ''.join(data)  # list로 들어 온 것을 스트링으로 합침
-        print(tmp)
+        #print(tmp)
         return tmp
 
     # 측정된 데이터 센서 값 출력 하고 list에 저장하기
     def sensor_parsing_data(self, data):
         tmp = ''.join(data)
-        print(tmp)
+        #print(tmp)
         self.list.append(tmp)
         return tmp
 
-    # 본 thread
+    # readThread : 들어온 값을 읽어주는 함수
     def readThread(self, ser):
 
         # thread가 종료될때까지
         # Serial interfacce :  data를 stream으로 바꿔서 (직렬화,serialization) 한 번에 1 bit 씩 전송
-
+        self.file_name = datetime.today().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
         join_path = os.path.join(self.folder_name,self.file_name)
         print(join_path)
-        f= open(join_path,'w')
         self.mylogger.info(self.file_name+' Open Write')
+
+        f  =None
+
         while not self.exitThread:
-            # 데이터가 있있다면
-            for c in ser.read():
-                self.line.append(chr(c))  # (integer, 0 ~ 255)를 ASCII character로 변환하고 line에 추가한다.
+           try:
+               # 데이터가 있있다면
+               for c in ser.read():
+                   self.line.append(chr(c))  # (integer, 0 ~ 255)를 ASCII character로 변환하고 line에 추가한다.
 
-                if c == 10:  # ASCII의 개행문자 10
-                    readystr = self.parsing_data(self.line)
-
-                    if (readystr == 'Transmission done\r\n'):
-                        self.meaBool = False
-                        f.close()
-                        self.mylogger.info(self.file_name + ' Close')
-                        #self.serial_thread.join()
-                        self.exitThread = True
-                        #print(self.serial_thread.is_alive())
-                        self.test_drawGraph()
-                        return None
-
-                    if (self.meaBool):
-                        readystr = self.sensor_parsing_data(self.line)
-                        if (readystr == '\n'):
-                            continue;
-                        else:
-                            #print('file write')
-                            readystr = readystr.strip('\n')
-                            f.write(readystr)
-
-                    if (readystr == 'Transmission Start\r\n'):
-                        self.meaBool = True
-
-                    del self.line[:]  # line list 원소를 다 지워버린다.
+                   if c == 10:  # ASCII의 개행문자 10
+                       readystr = self.parsing_data(self.line)
 
 
+                       if (readystr == 'Transmission done\r\n'):
+                           self.meaBool = False
+                           f.close()
+                           self.mylogger.info(self.file_name + ' Close')
 
+                           # print(self.serial_thread.is_alive())
+                           self.test_drawGraph()
+                           #self.drawGraph()
+                           #self.exitThread = True
+                           #return None
+
+                       if (self.meaBool):
+                           readystr = self.sensor_parsing_data(self.line)
+                           if (readystr == '\n'):
+                               continue;
+                           else:
+                               # print('file write')
+                               readystr = readystr.strip('\n')
+                               f.write(readystr)
+                               self.finish_line = self.finish_line + 1
+
+                       if (readystr == 'Transmission Start\r\n'):
+                           self.meaBool = True
+                           f = open(join_path, 'w')
+                           self.radionClick = False
+
+                           if self.mplWidgetClick >0:
+
+                               print('mplWidget Click : ' + str(self.MplWidget.canvas.mpl_disconnect(self.mplWidgetClick)))
+
+                       del self.line[:]  # line list 원소를 다 지워버린다.
+
+           except Exception as e:
+               #중간에 연결이 끊어졌을 경우
+               print(e)
+
+    # browser 창 설정 함수(1)
     def initBrowser(self):
         self.browser_lineEdit.setText(self.folder_name)
         self.browser_lineEdit.textChanged.connect(self.sync_browerEdit)
         self.save_pushButton.clicked.connect(self.OnOpenDocument)
 
+    # browser 창 설정 함수(2) : browser_lineEdit 값이 바뀔때마다, folder_name을 자동으로 바꿔줌
     def sync_browerEdit(self,text):
-        print(text)
+        #print(text)
         self.folder_name = text
 
+    # browser 창 설정 함수(3)
     def OnOpenDocument(self):
         self.folder_name = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         if self.folder_name:
@@ -335,13 +358,14 @@ class MainWindow(QMainWindow):
             if(self.folder_name ==''):
                 QMessageBox.about(self, "Warning", "Select Folder")
 
+    # log 창 설정 함수
     def initLog(self):
         logTextBox = QTextEditLogger(self)
         logTextBox.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logging.getLogger().addHandler(logTextBox)
         self.verticalLayout_3.addWidget(logTextBox.widget)
 
-
+    # setting 창 설정 함수(1)
     def initSetting(self):
         #create Validator
         self.onlyInt = QIntValidator()
@@ -357,6 +381,7 @@ class MainWindow(QMainWindow):
         # add button click event
         self.start_pushButton.clicked.connect(self.startGrah)
 
+    # setting 창 설정 함수(2)
     def checkSetting(self):
         print('check ')
         return (self.front_senserNum_spinBox.value() >0 and
@@ -366,23 +391,27 @@ class MainWindow(QMainWindow):
                 len(self.p_value_lineEdit.text()) and
                 len(self.sample_rate_lineEdit.text()) >0)
 
+    # setting 창 설정 함수(3) : 그래프를 그리기 전에 여러 error 가 날 수있는 상황을 체크해주고, mode에 따라서 데이터를 받아들임.
     def startGrah(self):
+        #browser path가 실제 존재하는 path 인지
         if os.path.isdir(self.folder_name) == False:
             QMessageBox.about(self, "Warning", "Not Exist Directory")
             return  None
 
+        #setting 창에서 입력을 제대로 했는지
         if self.checkSetting() == False:
             QMessageBox.about(self, "Warning", "Check Setting")
             return  None
 
+        # 연결이 되지 않았을 때
         if self.mode_check == Mode.no_connect:
             QMessageBox.about(self, "Warning", "Disconnect Server")
             return None
-
+        #mode가 wifi 일때,
         elif self.mode_check == Mode.wifi_success_connect:
             #원래는 uart connect 처럼 , file을 저장한 후  draw graph
             self.drawGraph()
-
+        #mode가 uart 일때,
         elif self.mode_check == Mode.uart_success_connect:
             # serial 읽을 thread 생성
             self.mylogger.info('Read sensor data')
@@ -392,11 +421,10 @@ class MainWindow(QMainWindow):
             print(self.serial_thread)
 
 
+    # setting 창 설정 함수(4) : 임시 graph 그리는 함수
     def drawGraph(self):
-        self.mylogger.info('draw 3d chart')
 
-        self.result_Array = []  # 초기화
-        print(self.result_Array)
+        self.mylogger.info('draw 3d chart')
 
         result_array = Main(
             front_num=int(self.front_senserNum_spinBox.text()),
@@ -411,23 +439,17 @@ class MainWindow(QMainWindow):
             method=self.method_comboBox.currentText()  # gradation contour rotate wireframe
         )
 
-        title = str(self.algorithm_comboBox.currentText())
-        theme = str(self.theme_comboBox.currentText())
-        self.result_Array = result_array  # self.result_Array[0] = mpa_grid_array , self.result_Array[1] = max_grid_array
+        self.title = str(self.algorithm_comboBox.currentText())
+        self.theme = str(self.theme_comboBox.currentText())
+
+        self.mpa_grid_array = result_array
+        self.max_grid_array = result_array
 
         self.radionClick = True
-        self.radioButtonClicked(title, theme, self.result_Array)
-        self.mpa_radioButton.clicked.connect(
-            lambda: self.radioButtonClicked(title, theme, self.result_Array))
-        self.max_radioButton.clicked.connect(
-            lambda: self.radioButtonClicked(title, theme, self.result_Array))
 
-
+    # setting 창 설정 함수(4) : interpolation.py 을 실행시키고 종료되면, mpa_grid_array와 max_grid_array을 받아옴.
     def test_drawGraph(self):
         self.mylogger.info('draw 3d chart')
-
-        self.result_Array = []  # 초기화
-        print(self.result_Array)
 
         result_array = test_Main(
             front_num=int(self.front_senserNum_spinBox.text()),
@@ -447,20 +469,21 @@ class MainWindow(QMainWindow):
         self.title = str(self.algorithm_comboBox.currentText())
         self.theme = str(self.theme_comboBox.currentText())
 
+        #result_array의 type이 dict 임.
         self.mpa_grid_array = result_array['MPA']
         self.max_grid_array = result_array['MAX']
 
-        print(result_array)
+
         self.radionClick = True
 
 
-
+    # setting 창 설정 함수(5) : mpa, max 을 선택한 것에 따라 등고선 그래프르 그려줌. 그리고 등고선을 클릭하면 좌표값을 보여주고 resultTable() 실행
     def radioButtonClicked(self):
 
+        #e등고선 그래프를 클릭할 경우 실행
         def onclick(event):
 
             try:
-
                 self.location[0] = math.ceil(event.xdata)
                 self.location[1] = math.ceil(event.ydata)
 
@@ -492,7 +515,9 @@ class MainWindow(QMainWindow):
         if len(self.mpa_grid_array) > 0:
 
             if self.radionClick:
-                self.MplWidget.canvas.mpl_connect('button_press_event', onclick)
+                #onclick이 이미 되었는지 안되었는지를 판단하기 위해 self.mplWidgetClick 을 사용
+                self.mplWidgetClick = self.MplWidget.canvas.mpl_connect('button_press_event', onclick)
+                print('mplWidget Click : ' + str(self.mplWidgetClick))
                 self.radionClick = False
 
             if self.mpa_radioButton.isChecked():
@@ -510,16 +535,19 @@ class MainWindow(QMainWindow):
         else:
             print('no array')
 
-
-
+    # table 창 설정 함수(1) : makeTable()을 실행시키는 함수
     def resultTable(self):
         print('==== resultTable  ====')
+        #print(self.serial_thread.is_alive())
+
         self.table_size_comboBox.activated[str].connect(self.makeTable)
 
-    # - >  for_num으로 변환을 해준다. - >
-    def makeTable(self,text):
-        print('make Table')
 
+    # table 창 설정 함수(2) : tableWidget을 만드는 창
+    def makeTable(self,text):
+        print('==== make Table ====')
+
+        #size 변수 선언
         size =0
 
         if '3' in text or 3 == text:
@@ -529,10 +557,7 @@ class MainWindow(QMainWindow):
             self.tableWidget.clear()
             size = 5
 
-        #self.tableWidget.resizeColumnsToContents()
-        #self.tableWidget.resizeRowsToContents()
-
-
+        #tableWidget 설정
         self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableWidget.setColumnCount(size)
         self.tableWidget.setRowCount(size*2)
@@ -540,18 +565,20 @@ class MainWindow(QMainWindow):
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.horizontalHeader().setVisible(False)
 
-        for_num = int(float((size - 1) / 2))
 
+        for_num = int(float((size - 1) / 2))
+        # index list와 index list 만들고, 변수 선언
         value_list = [[0 for i in range(size)] for j in range(size)]
         index_list = [[0 for i in range(size)] for j in range(size)]
 
         row_index =0
         colum_index = 0
 
+        # value_list, colum_list 에 self.table_array에 있는 값들을 나누어서 넣기
         for i in range(self.location[0] - for_num, self.location[0]+ for_num + 1):
             for j in range(self.location[1] - for_num, self.location[1] + for_num + 1):
 
-                index_list[row_index][colum_index] = str(i+1) + "X" + str(j+1)
+                index_list[row_index][colum_index] = str(i+1) + " X " + str(j+1)
                 try:
                     value_list[row_index][colum_index]  = self.table_array[i][j]
                 except IndexError:
@@ -563,6 +590,7 @@ class MainWindow(QMainWindow):
             row_index = row_index +1
 
 
+        #table.item에 좌표(index), 값(value) 배경색 등 등 넣기
         for i in range(0,size*2):
             for j in range(0,size):
                 if i % 2== 0:
@@ -573,7 +601,6 @@ class MainWindow(QMainWindow):
 
                 else:
                     value = value_list[i//2][j]
-                    print(str(i//2)  + " : " + str(j))
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
                     self.tableWidget.item(i, j).setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
                     self.tableWidget.item(i, j).setFont(QtGui.QFont("Arial", 11))
@@ -582,8 +609,7 @@ class MainWindow(QMainWindow):
                         self.tableWidget.item(i, j).setBackground(QtGui.QColor(1,1,1))
                         self.tableWidget.item(i, j).setForeground(QtGui.QColor(255, 255, 255))
 
-
-        #표 안에 글자는 수정할 수 없다.
+        #표 안에 글자는 수정 X
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
 
@@ -592,6 +618,7 @@ QApplicaton : 기본적으로 프로그램을 실행시키는 역할
 sys.argv : 현재 소스코드에 대한 절대 경로를 나타낸다. 즉 현재.파일이름.py의 절대경로를 나타낸다.
 QApplicaton class의 instance을 생성할 떄,
 '''
+
 app = QApplication(sys.argv)
 main_window = MainWindow()
 main_window.show()
