@@ -20,9 +20,12 @@ from module.socketServer import socketServer
 from module.interpolation import Main
 from module.test_interpolation import Main as test_Main
 from datetime import datetime
+from threading import Thread
 
 PMPSUI = '../ui_Files/PMPS.ui'
 
+conn = None
+main_window =None
 
 #Log 창 만드는 class
 class QTextEditLogger(logging.Handler):
@@ -55,6 +58,7 @@ class MainWindow(QMainWindow):
         #wifi mode
         self.ip = ''
         self.ip_port = 9002 # ip port 는 9002로 고정되어 있음.
+        self.startClick =False
         self.socket_server = ''
         self.socket_client =''
 
@@ -166,9 +170,8 @@ class MainWindow(QMainWindow):
 
 
             if result == QMessageBox.Ok:
-                self.socket_client.close()
-                self.mylogger.info('socket client close')
-                self.socket_server.close()
+                global conn
+                conn.close()
                 self.mylogger.info('socket server close')
                 self.statusbar.showMessage('Disconnect.. ')
                 self.mode_check = Mode.no_connect
@@ -193,58 +196,8 @@ class MainWindow(QMainWindow):
                 QMessageBox.about(self, "Warming", "Again ip address")
 
             elif self.ip == socket.gethostbyname(socket.getfqdn()):
-
-                try:
-                    self.socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    self.mylogger.info('create server socket')
-                    self.statusbar.showMessage('create server socket')
-                    self.socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    # self.socket_server.settimeout(1) # timeout for listening
-                    # self.socket_server.setdefaulttimeout(60)
-                except Exception as e:
-                    print(e)
-                    self.mylogger.error(e)
-                    self.mode_check = Mode.no_connect
-
-                try:
-                    self.socket_server.bind((self.ip, self.ip_port))
-                    self.mylogger.info('server socket bind. ' + self.ip + ':' + str(self.ip_port))
-                    self.statusbar.showMessage('server socket bind. ' + self.ip + ':' + str(self.ip_port))
-                except Exception as e:
-                    print(e)
-                    self.mylogger.error(e)
-                    self.mode_check = Mode.no_connect
-
-                try:
-                    self.socket_server.listen()  # max 1 client : 한개의 클라이언트만 받는다.
-                    self.mylogger.info('server socket listen')
-                    self.statusbar.showMessage('server socket listen')
-                except Exception as e:
-                    print(e)
-                    self.mylogger.error(e)
-                    self.mode_check = Mode.no_connect
-
-                stopped = False
-                while not stopped:
-                    try:
-                        self.socket_client, addr = self.socket_server.accept()
-                        print(addr)
-                        self.mylogger.info('Connected by' + addr[0] + str(addr[1]))
-                    except socket.timeout as e:
-                        print(e)
-                        self.mylogger.error(e)
-                        self.mode_check = Mode.no_connect
-                        pass
-                    except Exception as e:
-                        print(e)
-                        self.mylogger.error(e)
-                        self.mode_check = Mode.no_connect
-                    else:
-                        stopped = True
-                        self.mylogger.info('Connection Successful')
-                        self.statusbar.showMessage('Connection Successful')
-                        self.mode_check = Mode.wifi_success_connect
-
+                serverThread = ServerThread(main_window)
+                serverThread.start()
 
         if self.mode_check == Mode.uart_connect:
             if self.uart_port:
@@ -404,9 +357,11 @@ class MainWindow(QMainWindow):
             QMessageBox.about(self, "Warning", "Disconnect Server")
             return None
         #mode가 wifi 일때,
-        elif self.mode_check == Mode.wifi_success_connect:
+        elif self.mode_check == Mode.wifi_success_connect :
+            print('succuess wifi')
             #원래는 uart connect 처럼 , file을 저장한 후  draw graph
-            self.drawGraph()
+            self.startClick =True
+
         #mode가 uart 일때,
         elif self.mode_check == Mode.uart_success_connect:
             # serial 읽을 thread 생성
@@ -607,6 +562,83 @@ class MainWindow(QMainWindow):
 
         #표 안에 글자는 수정 X
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+
+
+#socket 통신 serverThread
+class ServerThread(Thread):
+    def __init__(self, m_window):
+        Thread.__init__(self)
+        self.window = m_window
+
+    def run(self):
+        BUFFER_SIZE = 20
+        tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tcpServer.bind((self.window.ip, self.window.ip_port))
+        threads = []
+
+        tcpServer.listen(4)
+        while True:
+            print("Multithreaded server : Waiting for connections from TCP clients...")
+            self.window.mylogger.info('Multithreaded server : Waiting for connections from TCP clients...')
+
+            global conn
+            (conn, (ip, port)) = tcpServer.accept()
+            print('wifi connect sucesses')
+            self.window.mylogger.info('wifi connect sucesses')
+            self.window.mode_check = Mode.wifi_success_connect
+
+            newthread = ClientThread(ip, port, self.window)
+
+            newthread.start()
+
+            threads.append(newthread)
+
+        for t in threads:
+            t.join()
+
+#socket 통신 clientThread
+class ClientThread(Thread):
+    def __init__(self, ip, port, window):
+        Thread.__init__(self)
+        self.window = window
+        self.ip = ip
+        self.port = port
+        print(self.window.mode_check)
+        print("New server socket thread started for " + ip + ":" + str(port))
+        self.window.mylogger.info("New server socket thread started for " + ip + ":" + str(port))
+
+    def run(self):
+        print('client thread run')
+        self.window.file_name = datetime.now().strftime("%Y.%m.%d.%H.%m.") + '(Machine_wifi_' + self.window.machine_number + ').txt'
+        join_path = os.path.join(self.window.folder_name, self.window.file_name)
+        print(join_path)
+        self.window.mylogger.info(self.window.file_name + ' Open Write')
+
+        f = None
+
+        while True:
+            # (conn, (self.ip,self.port)) = serverThread.tcpServer.accept()
+            global conn
+            data = conn.recv(2048)
+
+            if len(data) > 0 and self.window.startClick:
+                data_str =data.decode("utf-8")
+                if 'Measure' in data_str :
+                    f = open(join_path, 'w')
+
+                elif 'COUNT'  in data_str:
+                    print('============ finish ============')
+                    f.close()
+                    print('============ file close ============')
+
+                    # 그래프 그리기
+                    self.window.drawGraph()
+                else:
+                    # window.chat.append(data.decode("utf-8"))
+                    print(data_str)
+                    f.write(data_str)
 
 
 '''
