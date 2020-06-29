@@ -163,7 +163,6 @@ class Plot:
         #f = open(self.folder_path+ self.file_name, 'r')
         join_path = os.path.join(self.folder_name, self.file_name)
         f = open(join_path, 'r')
-        print(self.folder_name+ self.file_name)
 
         def update(i):
             global mpa_grid_array, max_grid_array, sen_array, full_order,mpa_array, max_array

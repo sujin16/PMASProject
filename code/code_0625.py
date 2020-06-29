@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
                                self.mylogger.info(self.file_name + ' Close')
                                # print(self.serial_thread.is_alive())
                                self.test_drawGraph()
-                               # self.drawGraph()
+                               # self.wifi_drawGraph()
                                # self.exitThread = True
                                # return None
 
@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
 
 
     # setting 창 설정 함수(4) : 임시 graph 그리는 함수
-    def drawGraph(self):
+    def wifi_drawGraph(self):
 
         self.mylogger.info('draw 3d chart')
 
@@ -635,8 +635,8 @@ class ClientThread(Thread):
                         f.close()
                         print('============ file close ============')
 
-                        # 그래프 그리기
-                        self.window.drawGraph()
+                        # 그래프 그리기 : 기기가 생기면  self.window.test_drawGraph() 로 실행 해보세요.
+                        self.window.wifi_drawGraph()
                 else:
                     if not (f is None):
                         # window.chat.append(data.decode("utf-8"))

@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="42d4d8c7-2a5c-4b38-9e5a-d2f4772dc215" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/code/code_0513.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/code_0625.py" afterPath="$PROJECT_DIR$/code/code_0625.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/test2.py" afterPath="$PROJECT_DIR$/code/test2.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/machine1.txt" afterPath="$PROJECT_DIR$/data/machine1.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/test_interpolation.py" afterPath="$PROJECT_DIR$/module/test_interpolation.py" />
     </list>
@@ -41,8 +40,8 @@
       <file leaf-file-name="code_0625.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code/code_0625.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="462">
-              <caret line="634" column="33" selection-start-line="634" selection-start-column="33" selection-end-line="634" selection-end-column="33" />
+            <state relative-caret-position="3387">
+              <caret line="636" column="0" selection-start-line="636" selection-start-column="0" selection-end-line="636" selection-end-column="0" />
               <folding>
                 <element signature="e#25#35#0" expanded="true" />
               </folding>
@@ -50,11 +49,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="2020.06.29.09.06.(Machine_wifi_1).txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/2020.06.29.09.06.(Machine_wifi_1).txt">
+      <file leaf-file-name="code_0513.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/code_0513.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-157">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="-15">
+              <caret line="280" column="29" selection-start-line="280" selection-start-column="29" selection-end-line="280" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -73,11 +72,21 @@
       <file leaf-file-name="test_interpolation.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/module/test_interpolation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="165" column="47" selection-start-line="165" selection-start-column="47" selection-end-line="165" selection-end-column="47" />
+            <state relative-caret-position="203">
+              <caret line="315" column="48" selection-start-line="315" selection-start-column="47" selection-end-line="315" selection-end-column="48" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test2.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/test2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="76">
+              <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -141,7 +150,6 @@
         <option value="$PROJECT_DIR$/code/2020.06.15.10.06.(Machine1).txt" />
         <option value="$PROJECT_DIR$/code/2020.06.15.11.06.(Machine1).txt" />
         <option value="$PROJECT_DIR$/code/2020.06.16.10.06.(Machine1).txt" />
-        <option value="$PROJECT_DIR$/code/test2.py" />
         <option value="$PROJECT_DIR$/module/valueZ.py" />
         <option value="$PROJECT_DIR$/module/interpolation.py" />
         <option value="$PROJECT_DIR$/code/2020.06.23.15.06.(Machine1).txt" />
@@ -149,6 +157,7 @@
         <option value="$PROJECT_DIR$/module/serialServer.py" />
         <option value="$PROJECT_DIR$/code/code_0513.py" />
         <option value="$PROJECT_DIR$/module/test_interpolation.py" />
+        <option value="$PROJECT_DIR$/code/test2.py" />
         <option value="$PROJECT_DIR$/code/code_0625.py" />
       </list>
     </option>
@@ -256,7 +265,7 @@
       <recent name="D:\2019_2_intern\Project\0511Project\module_2" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.code_0625">
+  <component name="RunManager" selected="Python.test2">
     <configuration default="false" name="test2" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -521,11 +530,11 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.code_0625" />
-        <item index="1" class="java.lang.String" itemvalue="Python.test_interpolation" />
-        <item index="2" class="java.lang.String" itemvalue="Python.interpolation" />
-        <item index="3" class="java.lang.String" itemvalue="Python.wifiConnectDialog" />
-        <item index="4" class="java.lang.String" itemvalue="Python.test2" />
+        <item index="0" class="java.lang.String" itemvalue="Python.test2" />
+        <item index="1" class="java.lang.String" itemvalue="Python.code_0625" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_interpolation" />
+        <item index="3" class="java.lang.String" itemvalue="Python.interpolation" />
+        <item index="4" class="java.lang.String" itemvalue="Python.wifiConnectDialog" />
       </list>
     </recent_temporary>
   </component>
@@ -544,16 +553,16 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="1936" height="1176" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20547946" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917467" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32917467" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35700575" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35700575" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24973656" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26775432" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26775432" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26679462" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -695,13 +704,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/code/2020.06.16.12.06.(Machine1).txt" />
     <entry file="file://$PROJECT_DIR$/code/2020.06.17.11.06.(Machine1).txt" />
-    <entry file="file://$PROJECT_DIR$/code/test2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="779">
-          <caret line="41" column="48" selection-start-line="41" selection-start-column="48" selection-end-line="41" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/wifiConnectDialog.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1653">
@@ -801,28 +803,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/test_interpolation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="165" column="47" selection-start-line="165" selection-start-column="47" selection-end-line="165" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/2020.06.29.10.06.(Machine_wifi_1).txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/code_0513.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="289" column="15" selection-start-line="289" selection-start-column="8" selection-end-line="289" selection-end-column="15" />
           <folding />
         </state>
       </provider>
@@ -835,10 +819,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code/code_0513.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-15">
+          <caret line="280" column="29" selection-start-line="280" selection-start-column="29" selection-end-line="280" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/test_interpolation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="203">
+          <caret line="315" column="48" selection-start-line="315" selection-start-column="47" selection-end-line="315" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/test2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="76">
+          <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code/code_0625.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="634" column="33" selection-start-line="634" selection-start-column="33" selection-end-line="634" selection-end-column="33" />
+        <state relative-caret-position="3387">
+          <caret line="636" column="0" selection-start-line="636" selection-start-column="0" selection-end-line="636" selection-end-column="0" />
           <folding>
             <element signature="e#25#35#0" expanded="true" />
           </folding>
