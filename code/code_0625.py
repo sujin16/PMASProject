@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
                 self.mode_check = Mode.no_connect
 
         if self.mode_check == Mode.wifi_connect:
-            if self.ip != socket.gethostbyname(socket.getfqdn()):
+            if not (self.ip is None):
                 QMessageBox.about(self, "Warming", "Again ip address")
 
             elif self.ip == socket.gethostbyname(socket.getfqdn()):
