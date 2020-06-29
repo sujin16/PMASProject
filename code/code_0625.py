@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
             if not (self.ip is None):
                 QMessageBox.about(self, "Warming", "Again ip address")
 
-            elif self.ip == socket.gethostbyname(socket.getfqdn()):
+            else :
                 serverThread = ServerThread(main_window)
                 serverThread.start()
 
