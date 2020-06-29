@@ -1,4 +1,5 @@
 import sys
+import os
 from pykrige.ok import OrdinaryKriging
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ mpa_grid_array =[]
 max_grid_array =[]
 
 class Plot:
-    def __init__(self, front_num, end_num, theme, min_bound, max_bound, interval, p_value, extr_interval, model, method,folder_path, file_name):
+    def __init__(self, front_num, end_num, theme, min_bound, max_bound, interval, p_value, extr_interval, model, method,folder_name, file_name):
         super().__init__()
 
         self.front_num = front_num
@@ -41,7 +42,9 @@ class Plot:
         self.method = method
         self.interpol_method = 'cubic'
         self.model = model
-        self.folder_path = folder_path +'/'
+        #self.folder_path = folder_path +'/'
+        self.folder_name = folder_name
+
         self.file_name = file_name
 
         self.x = []
@@ -157,8 +160,10 @@ class Plot:
 
         extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
         #1.먼저 파일 읽기
-        f = open(self.folder_path+ self.file_name, 'r')
-        print(self.folder_path+ self.file_name)
+        #f = open(self.folder_path+ self.file_name, 'r')
+        join_path = os.path.join(self.folder_name, self.file_name)
+        f = open(join_path, 'r')
+        print(self.folder_name+ self.file_name)
 
         def update(i):
             global mpa_grid_array, max_grid_array, sen_array, full_order,mpa_array, max_array
@@ -314,9 +319,9 @@ class Plot:
 
 
 
-def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model,method,folder_path, file_name):
+def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model,method,folder_name, file_name):
     #1. plot 만들기
-    plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method, folder_path,file_name)
+    plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method, folder_name,file_name)
     # 2. plot main 함수 실행
     plot.main()
     return {'MPA' : mpa_grid_array , 'MAX' : max_grid_array}
@@ -334,7 +339,7 @@ def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_
 #      extr_interval=30,
 #      model='Nearest',  # 'nearest', 'Kriging', 'neural'
 #      method='gradation', # gradation contour rotate wireframe,
-#      folder_path = 'D:/2019_2_intern/Project/0511Project/code/',
+#      folder_name = 'D:/2019_2_intern/Project/0511Project/code/',
 #      file_name = '2020.06.24.09.06.(Machine1).txt'
 # )
 #
