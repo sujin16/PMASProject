@@ -164,13 +164,14 @@ class Plot:
         print(join_path)
         f = open(join_path, 'r')
 
+        # 매 초(self.interval) 마다 update 함수가 실행된다.
         def update(i):
 
-            global mpa_grid_array, max_grid_array, sen_array, full_order, mpa_array, max_array
+            global mpa_grid_array, max_grid_array, sen_array, full_order, mpa_array, max_array # 전역 변수를 이용할려면 global을 붙어야 된다.
 
             for i in range(0,self.front_num):
 
-                line = f.readline()
+                line = f.readline() # 한줄 씩 읽는 함수이다.
                 print(line)
 
                 if not line:
@@ -184,12 +185,12 @@ class Plot:
                     max_grid_array = []
 
 
-                    if len(mpa_array) == self.front_num * self.end_num:
+                    if len(mpa_array) == self.front_num * self.end_num: # 값이 num에 맞게 잘 들어왔는지 확인
                         mpa_array = mpa_array.astype('int32')
 
                         update_data = np.c_[self.x, self.y, mpa_array]
 
-                        if (title == 'Nearest'):
+                        if (title == 'Nearest'): # 선택한 model에 따라 mpa, max도 보간법을 해준다.
                             update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
                         if (title == 'Kriging'):
                             update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
@@ -244,6 +245,7 @@ class Plot:
                 else:
                     line_arrray = line.split(',')
 
+                    # 첫번째 TAG 에 따라서 data을 받아들인다.
                     if line_arrray[0] == 'MPA':
                         a_array = line_arrray[3:]
                         a_array[0] = a_array[0].split(':')[1]
@@ -282,9 +284,11 @@ class Plot:
                             a_array[-1] = a_array[-1].split("\n")[0]
                             sen_array = np.append(sen_array, a_array)
 
+
             sen_array = sen_array.astype('int32')
             update_data = np.c_[self.x, self.y, sen_array]
 
+            #선택한 model에 따라 보간법을 해준다.
             if (title == 'Nearest'):
                 update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
             if (title == 'Kriging'):
@@ -295,15 +299,9 @@ class Plot:
 
             gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
 
-            grid_array =[]
+            ax.clear() #전에 그렸던 것을 지워준다
 
-            grid_array.append(gridx_update) #0. 보간법이 적용된 x 값
-            grid_array.append(gridy_update) #1. 보간법이 적용된 y 값
-            grid_array.append(gridz_update) #2. 보간법이 적용된 z 값
-            grid_array.append(sen_array)    #3. 실제 센서 값
-
-            ax.clear()
-
+            #선택한 method에 따라 그래프를 그려준다
             if(method =='gradation'):
                 ax.plot_surface(gridx_update, gridy_update, gridz_update, alpha=0.5, cmap=self.theme)
                 ax.set_zbound(self.min_bound, self.max_bound)
@@ -325,11 +323,11 @@ class Plot:
             return ax,
 
 
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(10, 10)) # 10 * 10 그래프 창을 만드는 것이다.
         fig.suptitle(title, fontsize=18)
         ax = fig.gca(projection='3d')
         ani = animation.FuncAnimation(fig, update, interval=self.interval)
-        plt.show(block=True)
+        plt.show()
 
 
 def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model,method,folder_name, file_name):
