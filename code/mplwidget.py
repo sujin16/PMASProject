@@ -4,8 +4,6 @@
 from PyQt5.QtWidgets import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import mplcursors
-
 
 class MplWidget(QWidget):
     def __init__(self, parent=None):

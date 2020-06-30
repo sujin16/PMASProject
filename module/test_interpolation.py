@@ -12,7 +12,6 @@ import pybrain.datasets as pd
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
 import datetime as dt
-#import code.code_0513 as code
 
 start_time =''
 end_time= ''
@@ -58,15 +57,15 @@ class Plot:
         z = np.random.uniform(low=0, high=40, size=(front_num * end_num,))
         self.sample_data = np.c_[self.x, self.y, z]
 
-    def main(self):
+    def initPlot(self):
         if (self.model == 'Neural'):
-            self.plot(method=self.method, title='Neural net')
+            self.drawPlot(method=self.method, title='Neural net')
 
         if (self.model == 'Kriging'):
-            self.plot(method=self.method, title='Kriging')
+            self.drawPlot(method=self.method, title='Kriging')
 
         if (self.model == 'Nearest'):
-            self.plot(method=self.method, title='Nearest')
+            self.drawPlot(method=self.method, title='Nearest')
 
 
     def neural_net(self,extrapolation_spots, data):
@@ -156,11 +155,11 @@ class Plot:
 
 
 
-    def plot(self,method='gradation', title='Nearest'):
+    def drawPlot(self,method='gradation', title='Nearest'):
 
         extrapolation_spots = self.get_plane(1, self.front_num, 1, self.end_num, self.extr_interval)
+
         #1.먼저 파일 읽기
-        #f = open(self.folder_path+ self.file_name, 'r')
         join_path = os.path.join(self.folder_name, self.file_name)
         f = open(join_path, 'r')
 
@@ -170,8 +169,8 @@ class Plot:
             for i in range(0,self.front_num):
 
                 line = f.readline()
-                print('======================')
                 print(line)
+
                 if not line:
                     f.close()
 
@@ -224,7 +223,7 @@ class Plot:
                         print('error max array')
 
                     plt.close('all')
-                    return None
+                    return 'a'
 
                 else:
                     line_arrray = line.split(',')
@@ -290,6 +289,8 @@ class Plot:
             ax.clear()
 
             if(method =='gradation'):
+                print('========== gradation ==========')
+                print(gridz_update)
                 ax.plot_surface(gridx_update, gridy_update, gridz_update, alpha=0.5, cmap=self.theme)
                 ax.set_zbound(self.min_bound, self.max_bound)
                 ax.view_init(azim=45)
@@ -320,9 +321,11 @@ class Plot:
 
 def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model,method,folder_name, file_name):
     #1. plot 만들기
-    plot = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method, folder_name,file_name)
+    plot_graph = Plot(front_num, end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model, method, folder_name,file_name)
+
     # 2. plot main 함수 실행
-    plot.main()
+    plot_graph.initPlot()
+
     return {'MPA' : mpa_grid_array , 'MAX' : max_grid_array}
 
 

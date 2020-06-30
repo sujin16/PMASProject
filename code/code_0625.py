@@ -16,10 +16,9 @@ import threading
 
 from module.wifiConnectDialog import Ui_wifiDialog
 from module.uartConnectDialog import Ui_uartDialog
-from module.socketServer import socketServer
 from module.interpolation import Main
 from module.test_interpolation import Main as test_Main
-from datetime import datetime
+import datetime
 from threading import Thread
 
 PMPSUI = '../ui_Files/PMPS.ui'
@@ -91,7 +90,7 @@ class MainWindow(QMainWindow):
         self.mpa_radioButton.clicked.connect(self.radioButtonClicked)
         self.max_radioButton.clicked.connect(self.radioButtonClicked)
 
-        print(datetime.now())
+
         self.statusbar.showMessage('Ready')
         self.initLog()
         self.initConnect()
@@ -238,17 +237,13 @@ class MainWindow(QMainWindow):
 
         # thread가 종료될때까지
         # Serial interfacce :  data를 stream으로 바꿔서 (직렬화,serialization) 한 번에 1 bit 씩 전송
-        self.file_name = datetime.now().strftime("%Y.%m.%d.%H.%m.") + '(Machine' + self.machine_number + ').txt'
-        join_path = os.path.join(self.folder_name,self.file_name)
-        print(join_path)
-        self.mylogger.info(self.file_name+' Open Write')
 
         f  =None
 
         while not self.exitThread:
            try:
                # 데이터가 있있다면
-               for c in ser.read():
+                 for c in ser.read():
                    self.line.append(chr(c))  # (integer, 0 ~ 255)를 ASCII character로 변환하고 line에 추가한다.
 
                    if c == 10:  # ASCII의 개행문자 10
@@ -261,6 +256,7 @@ class MainWindow(QMainWindow):
                                f.close()
                                self.mylogger.info(self.file_name + ' Close')
                                # print(self.serial_thread.is_alive())
+                               print('===== done test drawGraph =====')
                                self.test_drawGraph()
                                # self.wifi_drawGraph()
                                # self.exitThread = True
@@ -279,6 +275,17 @@ class MainWindow(QMainWindow):
 
                        if (readystr == 'Transmission Start\r\n'):
                            self.meaBool = True
+                           print('===== start =====')
+                           print(datetime.datetime.now())
+                           a = datetime.datetime.now()
+                           print(a)
+                           print(a.strftime("%Y.%m.%d.%H.%m."))
+                           print(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+                           self.file_name = datetime.datetime.now().strftime("%Y.%m.%d.%H.%M.%S") + '(Machine' + self.machine_number + ').txt'
+                           join_path = os.path.join(self.folder_name, self.file_name)
+                           print(join_path)
+                           self.mylogger.info(self.file_name + ' Open Write')
                            f = open(join_path, 'w')
                            self.radionClick = False
 

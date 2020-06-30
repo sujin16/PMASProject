@@ -1,4 +1,3 @@
-import sys
 from pykrige.ok import OrdinaryKriging
 import numpy as np
 import matplotlib.pyplot as plt
