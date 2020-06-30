@@ -164,25 +164,27 @@ class Plot:
         print(join_path)
         f = open(join_path, 'r')
 
-        def update(i):
+        global mpa_grid_array, max_grid_array, sen_array, full_order, mpa_array, max_array
 
-            global mpa_grid_array, max_grid_array, sen_array, full_order, mpa_array, max_array
+        full_order = 1
+        machine_number = 0
+        sen_array = np.array([])
 
-            for i in range(0,self.front_num):
+        mpa_array = np.array([])
+        max_array = np.array([])
 
+        #맞당
+        mpa_grid_array = []
+        max_grid_array = []
+
+        while True:
+            for i in range(0, self.front_num):
                 line = f.readline()
                 print(line)
 
                 if not line:
                     f.close()
-
-                    fig.suptitle('finish', fontsize=18)
-                    ani._stop()
-
-                    #초기화
-                    mpa_grid_array = []
-                    max_grid_array = []
-
+                    print('file close')
 
                     if len(mpa_array) == self.front_num * self.end_num:
                         mpa_array = mpa_array.astype('int32')
@@ -204,7 +206,7 @@ class Plot:
                         mpa_grid_array.append(mpa_array)  # 3. 실제 센서 값
 
                     else:
-                        mpa_array =[]
+                        mpa_array = []
                         print('error mpa array')
 
                     if len(max_array) == self.front_num * self.end_num:
@@ -226,17 +228,8 @@ class Plot:
                         max_grid_array.append(gridz_update)  # 2. 보간법이 적용된 z 값
                         max_grid_array.append(max_array)  # 3. 실제 센서 값'
                     else:
-                        max_array =[]
+                        max_array = []
                         print('error max array')
-
-
-                    # 초기화
-                    full_order = 1
-                    machine_number = 0
-                    sen_array = np.array([])
-
-                    mpa_array = np.array([])
-                    max_array = np.array([])
 
                     plt.close('all')
                     return 'a'
@@ -262,7 +255,7 @@ class Plot:
                         if current_full_order == full_order + 1:
                             if len(sen_array) == self.front_num * self.end_num:
                                 print('full_order success ' + str(full_order))
-                                #print(sen_array)
+                                # print(sen_array)
                                 full_order = full_order + 1
                                 sen_array = np.array([])
                                 a_array = line_arrray[3:]
@@ -270,7 +263,7 @@ class Plot:
                                 sen_array = np.append(sen_array, a_array)
                             else:
                                 print('full_order error ' + str(full_order))
-                                #full_order = full_order + 1
+                                # full_order = full_order + 1
                                 sen_array = np.array([])
                                 a_array = line_arrray[3:]
                                 a_array[0] = a_array[0].split(':')[1]
@@ -283,53 +276,34 @@ class Plot:
                             sen_array = np.append(sen_array, a_array)
 
             sen_array = sen_array.astype('int32')
-            update_data = np.c_[self.x, self.y, sen_array]
+            try:
+                update_data = np.c_[self.x, self.y, sen_array]
 
-            if (title == 'Nearest'):
-                update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
-            if (title == 'Kriging'):
-                update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
-            if (title == 'Neural net'):
-                update_extra = self.neural_net(extrapolation_spots, update_data)
+                if (title == 'Nearest'):
+                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='Nearest')
+                if (title == 'Kriging'):
+                    update_extra = self.extrapolation(update_data, extrapolation_spots, model='Kriging')
+                if (title == 'Neural net'):
+                    update_extra = self.neural_net(extrapolation_spots, update_data)
 
+                gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
 
-            gridx_update, gridy_update, gridz_update = self.interpolation(update_extra)
+                grid_array = []
 
-            grid_array =[]
+                grid_array.append(gridx_update)  # 0. 보간법이 적용된 x 값
+                grid_array.append(gridy_update)  # 1. 보간법이 적용된 y 값
+                grid_array.append(gridz_update)  # 2. 보간법이 적용된 z 값
+                grid_array.append(sen_array)  # 3. 실제 센서 값
 
-            grid_array.append(gridx_update) #0. 보간법이 적용된 x 값
-            grid_array.append(gridy_update) #1. 보간법이 적용된 y 값
-            grid_array.append(gridz_update) #2. 보간법이 적용된 z 값
-            grid_array.append(sen_array)    #3. 실제 센서 값
-
-            ax.clear()
-
-            if(method =='gradation'):
-                ax.plot_surface(gridx_update, gridy_update, gridz_update, alpha=0.5, cmap=self.theme)
-                ax.set_zbound(self.min_bound, self.max_bound)
-                ax.view_init(azim=45)
-
-            if (method == 'wireframe'):
-                ax.plot_wireframe(gridx_update, gridy_update, gridz_update, alpha=0.5)
-                ax.scatter(update_data[:, 0], update_data[:, 1], update_data[:, 2], c='red')
-                ax.set_zbound(self.min_bound, self.max_bound)
-                ax.view_init(azim=45)
-
-            if (method == 'contour'):
-                ax.contourf(gridx_update, gridy_update, gridz_update, zdir='z', offset=self.min_bound, cmap=self.theme)
-                ax.contourf(gridx_update, gridy_update, gridz_update, zdir='x', offset=1, cmap=self.theme)
-                ax.contourf(gridx_update, gridy_update, gridz_update, zdir='y', offset=1, cmap=self.theme)
-                ax.set_zbound(self.min_bound, self.max_bound)
-                ax.view_init(azim=45)
-
-            return ax,
+                print(grid_array)
 
 
-        fig = plt.figure(figsize=(10, 10))
-        fig.suptitle(title, fontsize=18)
-        ax = fig.gca(projection='3d')
-        ani = animation.FuncAnimation(fig, update, interval=self.interval)
-        plt.show(block=True)
+            except Exception as e:
+                print(e)
+
+
+
+
 
 
 def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_interval, model,method,folder_name, file_name):
@@ -355,12 +329,12 @@ def Main(front_num,end_num, theme, min_bound, max_bound,interval, p_value, extr_
 #      model='Nearest',  # 'nearest', 'Kriging', 'neural'
 #      method='gradation', # gradation contour rotate wireframe,
 #      folder_name = 'D:/2019_2_intern/Project/0511Project/code/',
-#      file_name = '2020.06.24.09.06.(Machine1).txt'
+#      file_name = '2020.06.30.12.48.52(Machine1).txt'
 # )
 #
 # print('---------  end result  ------------')
+# #print(result)
 #
-# print(result)
 #
 # #print(result)
 # sys.exit()

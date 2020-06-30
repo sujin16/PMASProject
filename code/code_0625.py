@@ -18,6 +18,8 @@ from module.wifiConnectDialog import Ui_wifiDialog
 from module.uartConnectDialog import Ui_uartDialog
 from module.interpolation import Main
 from module.test_interpolation import Main as test_Main
+from module.test_interpolation_0630 import Main as today_Main
+
 import datetime
 from threading import Thread
 
@@ -258,6 +260,7 @@ class MainWindow(QMainWindow):
                                # print(self.serial_thread.is_alive())
                                print('===== done test drawGraph =====')
                                self.test_drawGraph()
+                               #self.today_drawGraph()
                                # self.wifi_drawGraph()
                                # self.exitThread = True
                                # return None
@@ -276,12 +279,6 @@ class MainWindow(QMainWindow):
                        if (readystr == 'Transmission Start\r\n'):
                            self.meaBool = True
                            print('===== start =====')
-                           print(datetime.datetime.now())
-                           a = datetime.datetime.now()
-                           print(a)
-                           print(a.strftime("%Y.%m.%d.%H.%m."))
-                           print(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-
                            self.file_name = datetime.datetime.now().strftime("%Y.%m.%d.%H.%M.%S") + '(Machine' + self.machine_number + ').txt'
                            join_path = os.path.join(self.folder_name, self.file_name)
                            print(join_path)
@@ -432,6 +429,33 @@ class MainWindow(QMainWindow):
         self.mpa_grid_array = result_array['MPA']
         self.max_grid_array = result_array['MAX']
 
+
+        self.radionClick = True
+
+    def today_drawGraph(self):
+        self.mylogger.info('draw 3d chart')
+
+        result_array = today_Main(
+            front_num=int(self.front_senserNum_spinBox.text()),
+            end_num=int(self.end_senserNum_spinBox.text()),
+            theme=self.theme_comboBox.currentText(),
+            min_bound=int(self.z_min_lineEdit.text()),
+            max_bound=int(self.z_max_lineEdit.text()),
+            interval=int(self.interval_lineEdit.text()),
+            p_value=float(self.p_value_lineEdit.text()),
+            extr_interval=30,
+            model=self.algorithm_comboBox.currentText(),  # 'nearest', 'kriging', 'neural'
+            method=self.method_comboBox.currentText(),  # gradation contour rotate wireframe
+            folder_name=self.folder_name,
+            file_name=self.file_name
+        )
+
+        self.title = str(self.algorithm_comboBox.currentText())
+        self.theme = str(self.theme_comboBox.currentText())
+
+        # result_array의 type이 dict 임.
+        self.mpa_grid_array = result_array['MPA']
+        self.max_grid_array = result_array['MAX']
 
         self.radionClick = True
 
@@ -619,10 +643,6 @@ class ClientThread(Thread):
 
     def run(self):
         print('client thread run')
-        self.window.file_name = datetime.now().strftime("%Y.%m.%d.%H.%m.") + '(Machine_wifi_' + self.window.machine_number + ').txt'
-        join_path = os.path.join(self.window.folder_name, self.window.file_name)
-        print(join_path)
-        self.window.mylogger.info(self.window.file_name + ' Open Write')
 
         f = None
 
@@ -634,6 +654,11 @@ class ClientThread(Thread):
             if len(data) > 0 and self.window.startClick:
                 data_str =data.decode("utf-8")
                 if 'Measure file' in data_str :
+                    self.window.file_name = datetime.datetime.now().strftime("%Y.%m.%d.%H.%M.%S") + '(Machine' + self.machine_number + ').txt'
+                    join_path = os.path.join(self.window.folder_name, self.window.file_name)
+                    print(join_path)
+                    self.window.mylogger.info(self.window.file_name + ' Open Write')
+
                     f = open(join_path, 'w')
 
                 elif 'Result'  in data_str:
